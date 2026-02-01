@@ -1,6 +1,6 @@
 # Socket Firewall Helm Chart
 
-Kubernetes Helm chart for deploying the [Socket.dev Registry Firewall](https://github.com/SocketDev/socket-nginx-firewall). Blocks vulnerable and malicious packages before they reach your cluster.
+Kubernetes Helm chart for deploying the Socket.dev Registry Firewall. Blocks vulnerable and malicious packages before they reach your cluster.
 
 ## Prerequisites
 
@@ -259,4 +259,3 @@ helm uninstall socket-firewall
 ## Support
 
 - [Socket.dev Documentation](https://docs.socket.dev)
-- [Socket Firewall Source](https://github.com/SocketDev/socket-nginx-firewall)
