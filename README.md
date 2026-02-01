@@ -180,6 +180,76 @@ helm install socket-firewall . \
 kubectl rollout restart deployment/socket-firewall
 ```
 
+## Deployment Recommendations
+
+### Corporate Network (On-Prem or VPN)
+
+**Best approach: Internal DNS + Corporate CA**
+
+Zero configuration required on developer laptops.
+
+1. **Deploy the firewall** with `service.type=LoadBalancer` or behind an Ingress
+2. **Internal DNS** resolves public registry domains to the firewall IP:
+   ```
+   registry.npmjs.org  →  10.0.0.50 (firewall IP)
+   pypi.org            →  10.0.0.50
+   crates.io           →  10.0.0.50
+   ```
+3. **Use a corporate CA certificate** that's already trusted on managed devices:
+   ```yaml
+   tls:
+     generateSelfSigned: false
+     existingSecret: corporate-wildcard-tls
+   ```
+
+**Result:** Developers run `npm install` as normal. Traffic routes through the firewall automatically.
+
+**Tradeoff:** Only works when developers are on corporate network or VPN.
+
+### Remote-First Companies
+
+**Best approach: Custom domain + MDM-pushed configs**
+
+For companies without a corporate network or VPN requirement.
+
+1. **Deploy the firewall** with a public domain (e.g., `sfw.company.com`)
+2. **Use a real SSL certificate** (Let's Encrypt via cert-manager, or commercial CA):
+   ```yaml
+   tls:
+     generateSelfSigned: false
+     existingSecret: sfw-company-com-tls
+   ```
+3. **Push package manager configs via MDM** (Jamf, Intune, etc.):
+
+   `.npmrc`:
+   ```
+   registry=https://sfw.company.com/npm/
+   ```
+
+   `pip.conf`:
+   ```ini
+   [global]
+   index-url = https://sfw.company.com/pypi/simple/
+   ```
+
+**Result:** Works from anywhere (home, coffee shop, office). No VPN required.
+
+**Tradeoff:** Requires pushing 4-6 config files per laptop via endpoint management.
+
+### Comparison
+
+| Approach | Laptop Config | Works Remote | VPN Required |
+|----------|---------------|--------------|--------------|
+| Internal DNS + Corp CA | None | No | Yes |
+| MDM + Custom Domain | Package manager configs | Yes | No |
+| MDM + Transparent Proxy | /etc/hosts + cert trust | No | Yes |
+
+### Security Considerations
+
+- **Restrict access** to the firewall if exposed publicly (IP allowlist, VPN, or Zero Trust)
+- **Use real certificates** in production to avoid cert trust issues
+- **Monitor blocked packages** via the `/socket-stats` endpoint or Socket dashboard
+
 ## Uninstall
 
 ```bash
