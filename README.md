@@ -62,8 +62,8 @@ registries:
 | `replicaCount` | Number of replicas | `1` |
 | `socket.apiToken` | Socket API token | `""` |
 | `socket.existingSecret` | Use existing secret | `""` |
-| `registries.npm.enabled` | Enable npm proxy | `true` |
-| `registries.npm.domains` | npm proxy domains | `["npm.firewall.local"]` |
+| `registries.npm.enabled` | Enable npm proxy | `false` |
+| `registries.npm.domains` | npm proxy domains | `["npm.company.local"]` |
 | `registries.pypi.enabled` | Enable PyPI proxy | `false` |
 | `registries.maven.enabled` | Enable Maven proxy | `false` |
 | `tls.generateSelfSigned` | Generate self-signed certs | `true` |
@@ -76,6 +76,28 @@ registries:
 | `securityContext` | Container security context | `{}` |
 
 See [values.yaml](values.yaml) for all options.
+
+## Proxy Modes
+
+### Transparent Proxy (Default)
+
+The firewall automatically proxies public registries (`registry.npmjs.org`, `pypi.org`, etc.) without any configuration. Just point DNS or `/etc/hosts` at the firewall.
+
+**Do not add public domains to `registries.*.domains`** - they're already included. Adding them causes duplicate server warnings.
+
+### Custom Domain Mode
+
+Use custom domains when you want a different hostname:
+
+```yaml
+registries:
+  npm:
+    enabled: true
+    domains:
+      - npm.company.internal  # Your custom domain
+```
+
+Then configure your package manager to use `https://npm.company.internal/`.
 
 ## Using with Package Managers
 

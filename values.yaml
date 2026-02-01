@@ -26,9 +26,9 @@ socket:
 # Each registry can have custom domains for proxying
 registries:
   npm:
-    enabled: true
+    enabled: false
     domains:
-      - npm.firewall.local
+      - npm.company.local
   pypi:
     enabled: false
     domains:
