@@ -71,6 +71,27 @@ service:
   httpPort: 80
   httpsPort: 443
 
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""  # e.g., "nginx", "traefik", "alb"
+  annotations: {}
+    # For AWS ALB:
+    # kubernetes.io/ingress.class: alb
+    # alb.ingress.kubernetes.io/scheme: internal
+    # For nginx:
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  hosts: []
+    # - host: sfw.company.com
+    #   paths:
+    #     - path: /
+    #       pathType: Prefix
+  tls: []
+    # - secretName: sfw-tls
+    #   hosts:
+    #     - sfw.company.com
+
 # TLS configuration
 tls:
   # Generate self-signed certificates (for testing)

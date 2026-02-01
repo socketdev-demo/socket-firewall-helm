@@ -15,7 +15,12 @@ Then trust the CA on developer machines or use a real certificate for production
 
 ## Accessing the Firewall
 
-{{- if eq .Values.service.type "LoadBalancer" }}
+{{- if .Values.ingress.enabled }}
+Ingress is enabled. Get the address:
+
+  kubectl get ingress {{ include "socket-firewall.fullname" . }} -n {{ .Release.Namespace }}
+
+{{- else if eq .Values.service.type "LoadBalancer" }}
 Get the external IP:
 
   kubectl get svc {{ include "socket-firewall.fullname" . }} -n {{ .Release.Namespace }}

@@ -71,6 +71,10 @@ registries:
 | `tls.generateSelfSigned` | Generate self-signed certs | `true` |
 | `tls.existingSecret` | Use existing TLS secret | `""` |
 | `service.type` | Service type | `ClusterIP` |
+| `ingress.enabled` | Enable Ingress | `false` |
+| `ingress.className` | Ingress class (nginx, alb, traefik) | `""` |
+| `ingress.hosts` | Ingress hostnames | `[]` |
+| `ingress.tls` | Ingress TLS configuration | `[]` |
 | `resources.limits.cpu` | CPU limit | `1` |
 | `resources.limits.memory` | Memory limit | `768Mi` |
 | `imagePullSecrets` | Image pull secrets for private registries | `[]` |
@@ -133,6 +137,73 @@ Add to `~/.m2/settings.xml`:
     <mirrorOf>central</mirrorOf>
   </mirror>
 </mirrors>
+```
+
+## Ingress Configuration
+
+Expose the firewall externally using an Ingress controller.
+
+### nginx Ingress
+
+```yaml
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  hosts:
+    - host: sfw.company.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: sfw-tls
+      hosts:
+        - sfw.company.com
+```
+
+### AWS ALB Ingress
+
+```yaml
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+  hosts:
+    - host: sfw.company.com
+      paths:
+        - path: /
+          pathType: Prefix
+```
+
+### Transparent Proxy (Multiple Hosts)
+
+Route multiple registry domains through the firewall:
+
+```yaml
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  hosts:
+    - host: registry.npmjs.org
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: pypi.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: registry-tls
+      hosts:
+        - registry.npmjs.org
+        - pypi.org
 ```
 
 ## TLS Configuration
