@@ -62,6 +62,8 @@ registries:
 | `replicaCount` | Number of replicas | `1` |
 | `socket.apiToken` | Socket API token | `""` |
 | `socket.existingSecret` | Use existing secret | `""` |
+| `socket.failOpen` | Allow downloads if API unavailable | `true` |
+| `socket.cacheTtl` | Cache TTL in seconds | `600` |
 | `registries.npm.enabled` | Enable npm proxy | `false` |
 | `registries.npm.domains` | npm proxy domains | `["npm.company.local"]` |
 | `registries.pypi.enabled` | Enable PyPI proxy | `false` |

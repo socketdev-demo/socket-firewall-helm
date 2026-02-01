@@ -6,6 +6,14 @@ metadata:
     {{- include "socket-firewall.labels" . | nindent 4 }}
 data:
   socket.yml: |
+    # Socket API configuration
+    socket:
+      fail_open: {{ .Values.socket.failOpen }}
+
+    # Cache configuration
+    cache:
+      ttl: {{ .Values.socket.cacheTtl }}
+
     # Proxy configuration
     proxy:
       buffer_size: {{ .Values.proxy.bufferSize }}

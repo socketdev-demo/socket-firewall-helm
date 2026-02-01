@@ -1,32 +1,61 @@
-Socket Firewall deployed successfully.
+Socket Firewall deployed successfully!
 
 {{- if .Values.tls.generateSelfSigned }}
-Self-signed certificates were generated. To extract the CA certificate:
+
+## Self-Signed Certificates
+
+Self-signed certificates were generated. Extract the CA certificate:
 
   kubectl exec -n {{ .Release.Namespace }} \
     $(kubectl get pod -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "socket-firewall.name" . }} -o jsonpath='{.items[0].metadata.name}') \
     -- cat /etc/nginx/ssl/ca.crt > socket-ca.crt
 
+Then trust the CA on developer machines or use a real certificate for production.
 {{- end }}
 
-To access the firewall:
+## Accessing the Firewall
 
-  kubectl port-forward svc/{{ include "socket-firewall.fullname" . }} 8443:443 -n {{ .Release.Namespace }}
+{{- if eq .Values.service.type "LoadBalancer" }}
+Get the external IP:
 
-Configure npm to use the firewall:
+  kubectl get svc {{ include "socket-firewall.fullname" . }} -n {{ .Release.Namespace }}
 
-  npm config set registry https://{{ (index .Values.registries.npm.domains 0) }}:8443/
-  {{- if .Values.tls.generateSelfSigned }}
-  npm config set strict-ssl false  # Or trust the CA cert above
-  {{- end }}
+{{- else if eq .Values.service.type "NodePort" }}
+Get the NodePort:
 
-Configured registries:
+  kubectl get svc {{ include "socket-firewall.fullname" . }} -n {{ .Release.Namespace }}
+
+{{- else }}
+For testing, use port-forward:
+
+  kubectl port-forward svc/{{ include "socket-firewall.fullname" . }} 443:443 -n {{ .Release.Namespace }}
+
+For production, expose via Ingress or change service.type to LoadBalancer.
+{{- end }}
+
+## Usage
+
+The firewall automatically proxies public registries (registry.npmjs.org, pypi.org, etc.).
+
+**Option A: Transparent Proxy (recommended for corporate networks)**
+
+Point DNS for registry.npmjs.org, pypi.org, etc. to the firewall IP.
+No package manager configuration needed.
+
+**Option B: Custom Domains**
+
+Configure package managers to use your custom domains:
 {{- if .Values.registries.npm.enabled }}
-  - npm: {{ join ", " .Values.registries.npm.domains }}
+  npm config set registry https://{{ index .Values.registries.npm.domains 0 }}/
 {{- end }}
 {{- if .Values.registries.pypi.enabled }}
-  - pypi: {{ join ", " .Values.registries.pypi.domains }}
+  pip config set global.index-url https://{{ index .Values.registries.pypi.domains 0 }}/simple/
 {{- end }}
-{{- if .Values.registries.maven.enabled }}
-  - maven: {{ join ", " .Values.registries.maven.domains }}
-{{- end }}
+
+## Verify
+
+Test the health endpoint:
+
+  curl -sk https://<firewall-ip>/health
+
+See deployment recommendations in README.md for production setup.
