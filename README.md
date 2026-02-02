@@ -1,6 +1,7 @@
 # Socket Firewall Helm Chart
 
 Kubernetes Helm chart for deploying the Socket.dev Registry Firewall. Blocks vulnerable and malicious packages before they reach your cluster.
+<img width="972" height="386" alt="image" src="https://github.com/user-attachments/assets/2db0a19a-6753-4039-893c-ebf004e983e5" />
 
 ## Prerequisites
 
