@@ -59,7 +59,12 @@ registries:
 |-----------|-------------|---------|
 | `image.repository` | Docker image | `socketdev/socket-registry-firewall` |
 | `image.tag` | Image tag | `latest` |
-| `replicaCount` | Number of replicas | `1` |
+| `replicaCount` | Number of replicas (ignored if autoscaling enabled) | `1` |
+| `autoscaling.enabled` | Enable HorizontalPodAutoscaler | `false` |
+| `autoscaling.minReplicas` | Minimum replicas | `2` |
+| `autoscaling.maxReplicas` | Maximum replicas | `10` |
+| `autoscaling.targetCPUUtilizationPercentage` | CPU threshold for scaling | `70` |
+| `autoscaling.targetMemoryUtilizationPercentage` | Memory threshold (optional) | `nil` |
 | `socket.apiToken` | Socket API token | `""` |
 | `socket.existingSecret` | Use existing secret | `""` |
 | `socket.failOpen` | Allow downloads if API unavailable | `true` |
@@ -233,6 +238,31 @@ Create a Certificate resource and reference the secret:
 tls:
   generateSelfSigned: false
   existingSecret: socket-firewall-tls
+```
+
+## Autoscaling
+
+Enable horizontal pod autoscaling to handle variable load:
+
+```yaml
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80  # optional
+```
+
+When enabled, the HorizontalPodAutoscaler manages replica count based on CPU and/or memory utilization. The `replicaCount` value is ignored.
+
+**Requirements:**
+- Kubernetes metrics-server must be installed
+- Resource requests must be set (they are by default)
+
+**Verify autoscaling:**
+```bash
+kubectl get hpa socket-firewall
+kubectl describe hpa socket-firewall
 ```
 
 ## Using an Existing Secret for API Token

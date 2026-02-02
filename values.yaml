@@ -11,8 +11,16 @@ image:
 imagePullSecrets: []
 # - name: my-registry-secret
 
-# Number of replicas
+# Number of replicas (ignored if autoscaling is enabled)
 replicaCount: 1
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  # targetMemoryUtilizationPercentage: 80
 
 # Socket API configuration
 socket:
