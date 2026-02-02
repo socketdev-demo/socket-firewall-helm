@@ -25,6 +25,7 @@ autoscaling:
 # Socket API configuration
 socket:
   # API token for Socket.dev (required)
+  # Required scopes: packages, entitlements:list
   # Set via --set socket.apiToken=xxx or create secret manually
   apiToken: ""
   # Name of existing secret containing SOCKET_SECURITY_API_TOKEN

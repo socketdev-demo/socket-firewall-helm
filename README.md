@@ -6,7 +6,8 @@ Kubernetes Helm chart for deploying the Socket.dev Registry Firewall. Blocks vul
 
 - Kubernetes 1.21+
 - Helm 3.8+
-- Socket.dev API token ([get one here](https://socket.dev))
+- Socket.dev API token with scopes: `packages`, `entitlements:list`
+  - Create at: Socket Dashboard → Settings → API Tokens
 
 ## Quick Start
 
