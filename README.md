@@ -88,6 +88,21 @@ registries:
 
 See [values.yaml](values.yaml) for all options.
 
+### Example Configurations
+
+Pre-built configurations for common deployment scenarios:
+
+```bash
+# Corporate network (internal DNS + corp CA)
+helm install socket-firewall . -f examples/corporate.yaml \
+  --set socket.apiToken=$SOCKET_API_TOKEN
+
+# Remote-first (public domain + MDM-pushed configs)
+helm install socket-firewall . -f examples/remote-first.yaml \
+  --set socket.apiToken=$SOCKET_API_TOKEN \
+  --set ingress.hosts[0].host=sfw.yourcompany.com
+```
+
 ## Proxy Modes
 
 ### Transparent Proxy (Default)
