@@ -14,6 +14,12 @@ imagePullSecrets: []
 # Number of replicas (ignored if autoscaling is enabled)
 replicaCount: 1
 
+# Pod Disruption Budget (keeps pods available during node maintenance)
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1  # Alternative to minAvailable
+
 # Autoscaling configuration
 autoscaling:
   enabled: false

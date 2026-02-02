@@ -61,6 +61,8 @@ registries:
 | `image.repository` | Docker image | `socketdev/socket-registry-firewall` |
 | `image.tag` | Image tag | `latest` |
 | `replicaCount` | Number of replicas (ignored if autoscaling enabled) | `1` |
+| `podDisruptionBudget.enabled` | Keep pods available during node maintenance | `true` |
+| `podDisruptionBudget.minAvailable` | Minimum pods that must stay running | `1` |
 | `autoscaling.enabled` | Enable HorizontalPodAutoscaler | `false` |
 | `autoscaling.minReplicas` | Minimum replicas | `2` |
 | `autoscaling.maxReplicas` | Maximum replicas | `10` |
