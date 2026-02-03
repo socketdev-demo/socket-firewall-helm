@@ -70,6 +70,14 @@ registries:
     enabled: false
     domains:
       - openvsx.firewall.local
+  nuget:
+    enabled: false
+    domains:
+      - nuget.firewall.local
+  go:
+    enabled: false
+    domains:
+      - go.firewall.local
 
 # Proxy tuning
 proxy:

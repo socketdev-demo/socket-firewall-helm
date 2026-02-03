@@ -52,6 +52,14 @@ registries:
     enabled: false
   cargo:
     enabled: false
+  nuget:
+    enabled: true
+    domains:
+      - nuget.internal.example.com
+  go:
+    enabled: true
+    domains:
+      - go.internal.example.com
 ```
 
 ### All Values
@@ -76,6 +84,8 @@ registries:
 | `registries.npm.domains` | npm proxy domains | `["npm.company.local"]` |
 | `registries.pypi.enabled` | Enable PyPI proxy | `false` |
 | `registries.maven.enabled` | Enable Maven proxy | `false` |
+| `registries.nuget.enabled` | Enable NuGet proxy | `false` |
+| `registries.go.enabled` | Enable Go proxy | `false` |
 | `tls.generateSelfSigned` | Generate self-signed certs | `true` |
 | `tls.existingSecret` | Use existing TLS secret | `""` |
 | `service.type` | Service type | `ClusterIP` |
@@ -160,6 +170,42 @@ Add to `~/.m2/settings.xml`:
     <mirrorOf>central</mirrorOf>
   </mirror>
 </mirrors>
+```
+
+### NuGet (dotnet)
+
+```bash
+# Add the firewall as a package source
+dotnet nuget add source https://nuget.internal.example.com/v3/index.json -n socket-firewall
+
+# Or via NuGet.Config in your project root
+```
+
+`NuGet.Config`:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="socket-firewall" value="https://nuget.internal.example.com/v3/index.json" />
+  </packageSources>
+</configuration>
+```
+
+### Go
+
+```bash
+# Set GOPROXY to use the firewall
+export GOPROXY=https://go.internal.example.com,direct
+
+# For self-signed certificates
+export GOINSECURE=go.internal.example.com
+# Or trust the CA certificate system-wide
+```
+
+Add to shell profile (`~/.bashrc`, `~/.zshrc`):
+```bash
+export GOPROXY=https://go.internal.example.com,direct
 ```
 
 ## Ingress Configuration

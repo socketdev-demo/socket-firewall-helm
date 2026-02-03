@@ -66,3 +66,17 @@ data:
           - {{ . }}
           {{- end }}
       {{- end }}
+      {{- if .Values.registries.nuget.enabled }}
+      nuget:
+        domains:
+          {{- range .Values.registries.nuget.domains }}
+          - {{ . }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.registries.go.enabled }}
+      go:
+        domains:
+          {{- range .Values.registries.go.domains }}
+          - {{ . }}
+          {{- end }}
+      {{- end }}
