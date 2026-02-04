@@ -68,6 +68,16 @@ spec:
               DOMAINS="$DOMAINS,DNS:{{ . }}"
               {{- end }}
               {{- end }}
+              {{- if .Values.registries.nuget.enabled }}
+              {{- range .Values.registries.nuget.domains }}
+              DOMAINS="$DOMAINS,DNS:{{ . }}"
+              {{- end }}
+              {{- end }}
+              {{- if .Values.registries.go.enabled }}
+              {{- range .Values.registries.go.domains }}
+              DOMAINS="$DOMAINS,DNS:{{ . }}"
+              {{- end }}
+              {{- end }}
               # Remove leading comma
               DOMAINS="${DOMAINS#,}"
 
