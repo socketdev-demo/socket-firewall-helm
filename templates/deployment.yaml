@@ -125,6 +125,10 @@ spec:
                 secretKeyRef:
                   name: {{ include "socket-firewall.secretName" . }}
                   key: {{ .Values.socket.existingSecretKey }}
+            - name: SOCKET_FAIL_OPEN
+              value: {{ .Values.socket.failOpen | quote }}
+            - name: SOCKET_CACHE_TTL
+              value: {{ .Values.socket.cacheTtl | quote }}
             - name: HTTP_PORT
               value: "80"
             - name: HTTPS_PORT
