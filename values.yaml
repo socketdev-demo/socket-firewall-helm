@@ -165,6 +165,16 @@ tolerations: []
 # Affinity
 affinity: {}
 
+# Extra containers to run alongside the firewall (e.g., auth sidecars, log collectors)
+extraContainers: []
+# - name: auth-sidecar
+#   image: my-org/auth-proxy:latest
+#   ports:
+#     - containerPort: 8443
+#   env:
+#     - name: UPSTREAM_PORT
+#       value: "443"
+
 # Service account
 serviceAccount:
   create: true
