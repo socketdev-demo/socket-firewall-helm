@@ -36,7 +36,7 @@ spec:
               service:
                 name: {{ include "socket-firewall.fullname" $ }}
                 port:
-                  number: 443
+                  number: {{ $.Values.service.httpsPort }}
           {{- end }}
     {{- end }}
     {{- else }}
@@ -49,6 +49,6 @@ spec:
               service:
                 name: {{ include "socket-firewall.fullname" . }}
                 port:
-                  number: 443
+                  number: {{ .Values.service.httpsPort }}
     {{- end }}
 {{- end }}

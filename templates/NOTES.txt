@@ -33,21 +33,26 @@ Get the NodePort:
 {{- else }}
 For testing, use port-forward:
 
-  kubectl port-forward svc/{{ include "socket-firewall.fullname" . }} 443:443 -n {{ .Release.Namespace }}
+  kubectl port-forward svc/{{ include "socket-firewall.fullname" . }} {{ .Values.service.httpsPort }}:{{ .Values.service.httpsPort }} -n {{ .Release.Namespace }}
 
 For production, expose via Ingress or change service.type to LoadBalancer.
 {{- end }}
 
 ## Usage
+{{- if .Values.pathRouting.enabled }}
 
-The firewall automatically proxies public registries (registry.npmjs.org, pypi.org, etc.).
+Path-based routing is enabled on domain: {{ .Values.pathRouting.domain }}
 
-**Option A: Transparent Proxy (recommended for corporate networks)**
+Configure package managers to use path prefixes:
+{{- range .Values.pathRouting.routes }}
+  {{ .registry }}: https://{{ $.Values.pathRouting.domain }}{{ .path }}/
+{{- end }}
 
-Point DNS for registry.npmjs.org, pypi.org, etc. to the firewall IP.
-No package manager configuration needed.
+Example:
+  npm config set registry https://{{ .Values.pathRouting.domain }}/npm/
+  pip config set global.index-url https://{{ .Values.pathRouting.domain }}/pypi/simple
 
-**Option B: Custom Domains**
+{{- else }}
 
 Configure package managers to use your custom domains:
 {{- if .Values.registries.npm.enabled }}
@@ -55,6 +60,7 @@ Configure package managers to use your custom domains:
 {{- end }}
 {{- if .Values.registries.pypi.enabled }}
   pip config set global.index-url https://{{ index .Values.registries.pypi.domains 0 }}/simple/
+{{- end }}
 {{- end }}
 
 ## Verify

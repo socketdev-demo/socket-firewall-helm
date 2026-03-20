@@ -43,8 +43,41 @@ socket:
   # Cache TTL for Socket API responses in seconds (default: 600 = 10 minutes)
   cacheTtl: 600
 
-# Registry configuration
-# Each registry can have custom domains for proxying
+# Path-based routing (recommended — single domain with path prefixes)
+# See: https://docs.socket.dev/docs/registry-mode-configuration-reference
+pathRouting:
+  enabled: false
+  domain: ""
+  # config_mode: upstream or middle (omit for downstream, which is default)
+  configMode: ""
+  routes: []
+  # - path: /npm
+  #   upstream: https://registry.npmjs.org
+  #   registry: npm
+  # - path: /pypi
+  #   upstream: https://pypi.org
+  #   registry: pypi
+  # - path: /maven
+  #   upstream: https://repo1.maven.org/maven2
+  #   registry: maven
+  # - path: /cargo
+  #   upstream: https://index.crates.io
+  #   registry: cargo
+  # - path: /rubygems
+  #   upstream: https://rubygems.org
+  #   registry: rubygems
+  # - path: /nuget
+  #   upstream: https://api.nuget.org
+  #   registry: nuget
+  # - path: /go
+  #   upstream: https://proxy.golang.org
+  #   registry: go
+  # - path: /conda
+  #   upstream: https://conda.anaconda.org
+  #   registry: conda
+
+# Domain-based routing (alternative — each registry gets its own subdomain)
+# Only used when pathRouting.enabled is false
 registries:
   npm:
     enabled: false
@@ -78,6 +111,10 @@ registries:
     enabled: false
     domains:
       - go.firewall.local
+  conda:
+    enabled: false
+    domains:
+      - conda.firewall.local
 
 # Proxy tuning
 proxy:
@@ -88,11 +125,65 @@ proxy:
   sendTimeout: 60
   readTimeout: 60
 
+# Nginx performance tuning
+nginx:
+  workerProcesses: 2
+  workerConnections: 4096
+
+# Metadata filtering (removes blocked/warned packages from registry metadata responses)
+metadataFiltering:
+  enabled: false
+  filterBlocked: true
+  filterWarn: false
+  includeUncheckedVersions: true
+  maxVersions: 100
+  cacheTtl: 3600
+  batchSize: 4000
+
+# Redis caching for Socket API lookups
+redis:
+  enabled: false
+  host: redis
+  port: 6379
+  password: ""
+  db: 0
+  timeout: 1000
+  poolSize: 100
+  ttl: 86400
+  ssl: false
+  sslVerify: true
+  sslCaCert: ""
+  sslClientCert: ""
+  sslClientKey: ""
+
+# Splunk HEC integration
+splunk:
+  enabled: false
+  hecUrl: ""
+  hecToken: ""
+  index: "sfw-hec"
+  source: "sfw-event"
+
+# Webhook event delivery (fires on package decisions)
+webhook:
+  enabled: false
+  url: ""
+  sslVerify: true
+  timeout: 5000
+  onBlock: true
+  onWarn: true
+  onMonitor: true
+  onIgnore: false
+
 # Service configuration
 service:
   type: ClusterIP
   httpPort: 80
   httpsPort: 443
+  annotations: {}
+    # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    # service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 
 # Ingress configuration
 ingress:

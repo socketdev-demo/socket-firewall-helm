@@ -13,7 +13,7 @@ keywords:
   - firewall
 home: https://socket.dev
 sources:
-  - https://github.com/SocketDev/socket-nginx-firewall
+  - https://github.com/SocketDev/socket-registry-firewall
 maintainers:
   - name: Socket.dev
     url: https://socket.dev

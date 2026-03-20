@@ -38,6 +38,9 @@ spec:
             - |
               # Generate self-signed certificate for all configured domains
               DOMAINS=""
+              {{- if .Values.pathRouting.enabled }}
+              DOMAINS="DNS:{{ .Values.pathRouting.domain }}"
+              {{- else }}
               {{- if .Values.registries.npm.enabled }}
               {{- range .Values.registries.npm.domains }}
               DOMAINS="$DOMAINS,DNS:{{ . }}"
@@ -78,8 +81,14 @@ spec:
               DOMAINS="$DOMAINS,DNS:{{ . }}"
               {{- end }}
               {{- end }}
+              {{- if .Values.registries.conda.enabled }}
+              {{- range .Values.registries.conda.domains }}
+              DOMAINS="$DOMAINS,DNS:{{ . }}"
+              {{- end }}
+              {{- end }}
               # Remove leading comma
               DOMAINS="${DOMAINS#,}"
+              {{- end }}
 
               # Generate CA key and certificate
               openssl genrsa -out /certs/ca.key 2048
@@ -124,10 +133,10 @@ spec:
           {{- end }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.httpPort }}
               protocol: TCP
             - name: https
-              containerPort: 443
+              containerPort: {{ .Values.service.httpsPort }}
               protocol: TCP
           env:
             - name: SOCKET_SECURITY_API_TOKEN
@@ -140,9 +149,9 @@ spec:
             - name: SOCKET_CACHE_TTL
               value: {{ .Values.socket.cacheTtl | quote }}
             - name: HTTP_PORT
-              value: "80"
+              value: {{ .Values.service.httpPort | quote }}
             - name: HTTPS_PORT
-              value: "443"
+              value: {{ .Values.service.httpsPort | quote }}
             - name: CONFIG_FILE
               value: /app/socket.yml
           volumeMounts:

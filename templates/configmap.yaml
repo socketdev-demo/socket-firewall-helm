@@ -23,6 +23,27 @@ data:
       send_timeout: {{ .Values.proxy.sendTimeout }}
       read_timeout: {{ .Values.proxy.readTimeout }}
 
+    nginx:
+      worker_processes: {{ .Values.nginx.workerProcesses }}
+      worker_connections: {{ .Values.nginx.workerConnections }}
+
+    {{- if .Values.pathRouting.enabled }}
+    path_routing:
+      enabled: true
+      domain: {{ .Values.pathRouting.domain }}
+      {{- if .Values.pathRouting.configMode }}
+      config_mode: {{ .Values.pathRouting.configMode }}
+      {{- end }}
+      routes:
+        {{- range .Values.pathRouting.routes }}
+        - path: {{ .path }}
+          upstream: {{ .upstream }}
+          registry: {{ .registry }}
+          {{- if .mode }}
+          mode: {{ .mode }}
+          {{- end }}
+        {{- end }}
+    {{- else }}
     registries:
       {{- if .Values.registries.npm.enabled }}
       npm:
@@ -80,3 +101,70 @@ data:
           - {{ . }}
           {{- end }}
       {{- end }}
+      {{- if .Values.registries.conda.enabled }}
+      conda:
+        domains:
+          {{- range .Values.registries.conda.domains }}
+          - {{ . }}
+          {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- if .Values.metadataFiltering.enabled }}
+    metadata_filtering:
+      enabled: true
+      filter_blocked: {{ .Values.metadataFiltering.filterBlocked }}
+      filter_warn: {{ .Values.metadataFiltering.filterWarn }}
+      include_unchecked_versions: {{ .Values.metadataFiltering.includeUncheckedVersions }}
+      max_versions: {{ .Values.metadataFiltering.maxVersions }}
+      cache_ttl: {{ .Values.metadataFiltering.cacheTtl }}
+      batch_size: {{ .Values.metadataFiltering.batchSize }}
+    {{- end }}
+
+    {{- if .Values.redis.enabled }}
+    redis:
+      enabled: true
+      host: {{ .Values.redis.host }}
+      port: {{ .Values.redis.port }}
+      {{- if .Values.redis.password }}
+      password: {{ .Values.redis.password | quote }}
+      {{- end }}
+      db: {{ .Values.redis.db }}
+      timeout: {{ .Values.redis.timeout }}
+      pool_size: {{ .Values.redis.poolSize }}
+      ttl: {{ .Values.redis.ttl }}
+      {{- if .Values.redis.ssl }}
+      ssl: true
+      ssl_verify: {{ .Values.redis.sslVerify }}
+      {{- if .Values.redis.sslCaCert }}
+      ssl_ca_cert: {{ .Values.redis.sslCaCert }}
+      {{- end }}
+      {{- if .Values.redis.sslClientCert }}
+      ssl_client_cert: {{ .Values.redis.sslClientCert }}
+      {{- end }}
+      {{- if .Values.redis.sslClientKey }}
+      ssl_client_key: {{ .Values.redis.sslClientKey }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- if .Values.splunk.enabled }}
+    splunk:
+      enabled: true
+      hec_url: {{ .Values.splunk.hecUrl }}
+      hec_token: {{ .Values.splunk.hecToken }}
+      index: {{ .Values.splunk.index }}
+      source: {{ .Values.splunk.source }}
+    {{- end }}
+
+    {{- if .Values.webhook.enabled }}
+    webhook:
+      enabled: true
+      url: {{ .Values.webhook.url }}
+      ssl_verify: {{ .Values.webhook.sslVerify }}
+      timeout: {{ .Values.webhook.timeout }}
+      on_block: {{ .Values.webhook.onBlock }}
+      on_warn: {{ .Values.webhook.onWarn }}
+      on_monitor: {{ .Values.webhook.onMonitor }}
+      on_ignore: {{ .Values.webhook.onIgnore }}
+    {{- end }}
