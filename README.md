@@ -15,14 +15,33 @@ Kubernetes Helm chart for deploying the Socket.dev Registry Firewall. Blocks vul
 # Add your Socket API token
 export SOCKET_API_TOKEN="your-token-here"
 
-# Install the chart
+# Install with path-based routing (recommended)
 helm install socket-firewall . \
+  --namespace socket-firewall --create-namespace \
   --set socket.apiToken=$SOCKET_API_TOKEN \
-  --set registries.npm.domains[0]=npm.internal.example.com
+  --set pathRouting.enabled=true \
+  --set pathRouting.domain=sfw.company.com \
+  --set pathRouting.routes[0].path=/npm \
+  --set pathRouting.routes[0].upstream=https://registry.npmjs.org \
+  --set pathRouting.routes[0].registry=npm \
+  --set pathRouting.routes[1].path=/pypi \
+  --set pathRouting.routes[1].upstream=https://pypi.org \
+  --set pathRouting.routes[1].registry=pypi
 
 # Verify deployment
-kubectl get pods -l app.kubernetes.io/name=socket-firewall
+kubectl get pods -n socket-firewall -l app.kubernetes.io/name=socket-firewall
+
+# Port-forward for testing
+kubectl port-forward svc/socket-firewall 8443:443 -n socket-firewall
+
+# Test health
+curl -sk https://localhost:8443/health
+
+# Test npm through the firewall
+npm install express --registry https://localhost:8443/npm/ --strict-ssl=false
 ```
+
+For simpler installs, use a values file instead of `--set` flags. See [examples/](examples/) for ready-made configs.
 
 ## Configuration
 
@@ -34,7 +53,25 @@ kubectl get pods -l app.kubernetes.io/name=socket-firewall
 
 ### Registry Configuration
 
-Enable registries and set custom domains for proxying:
+**Path-based routing (recommended):** A single domain with path prefixes for each registry.
+
+```yaml
+pathRouting:
+  enabled: true
+  domain: sfw.company.com
+  routes:
+    - path: /npm
+      upstream: https://registry.npmjs.org
+      registry: npm
+    - path: /pypi
+      upstream: https://pypi.org
+      registry: pypi
+    - path: /maven
+      upstream: https://repo1.maven.org/maven2
+      registry: maven
+```
+
+**Domain-based routing (alternative):** Each registry gets its own subdomain.
 
 ```yaml
 registries:
@@ -46,20 +83,6 @@ registries:
     enabled: true
     domains:
       - pypi.internal.example.com
-  maven:
-    enabled: false
-  rubygems:
-    enabled: false
-  cargo:
-    enabled: false
-  nuget:
-    enabled: true
-    domains:
-      - nuget.internal.example.com
-  go:
-    enabled: true
-    domains:
-      - go.internal.example.com
 ```
 
 ### All Values
@@ -68,36 +91,36 @@ registries:
 |-----------|-------------|---------|
 | `image.repository` | Docker image | `socketdev/socket-registry-firewall` |
 | `image.tag` | Image tag | `latest` |
+| `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `replicaCount` | Number of replicas (ignored if autoscaling enabled) | `1` |
-| `podDisruptionBudget.enabled` | Keep pods available during node maintenance | `true` |
-| `podDisruptionBudget.minAvailable` | Minimum pods that must stay running | `1` |
-| `autoscaling.enabled` | Enable HorizontalPodAutoscaler | `false` |
-| `autoscaling.minReplicas` | Minimum replicas | `2` |
-| `autoscaling.maxReplicas` | Maximum replicas | `10` |
-| `autoscaling.targetCPUUtilizationPercentage` | CPU threshold for scaling | `70` |
-| `autoscaling.targetMemoryUtilizationPercentage` | Memory threshold (optional) | `nil` |
 | `socket.apiToken` | Socket API token | `""` |
 | `socket.existingSecret` | Use existing secret | `""` |
 | `socket.failOpen` | Allow downloads if API unavailable | `true` |
 | `socket.cacheTtl` | Cache TTL in seconds | `600` |
-| `registries.npm.enabled` | Enable npm proxy | `false` |
-| `registries.npm.domains` | npm proxy domains | `["npm.company.local"]` |
-| `registries.pypi.enabled` | Enable PyPI proxy | `false` |
-| `registries.maven.enabled` | Enable Maven proxy | `false` |
-| `registries.nuget.enabled` | Enable NuGet proxy | `false` |
-| `registries.go.enabled` | Enable Go proxy | `false` |
+| **Path-Based Routing** | | |
+| `pathRouting.enabled` | Enable path-based routing | `false` |
+| `pathRouting.domain` | Domain for path routing | `""` |
+| `pathRouting.configMode` | Config mode: upstream, middle, or omit for downstream | `""` |
+| `pathRouting.routes` | List of path/upstream/registry route objects | `[]` |
+| **Domain-Based Routing** | | |
+| `registries.<name>.enabled` | Enable registry (npm, pypi, maven, etc.) | `false` |
+| `registries.<name>.domains` | Custom domains for registry | `[]` |
+| **Integrations** | | |
+| `metadataFiltering.enabled` | Filter blocked packages from metadata | `false` |
+| `redis.enabled` | Enable Redis caching for API lookups | `false` |
+| `splunk.enabled` | Enable Splunk HEC integration | `false` |
+| `webhook.enabled` | Enable webhook event delivery | `false` |
+| **Infrastructure** | | |
 | `tls.generateSelfSigned` | Generate self-signed certs | `true` |
 | `tls.existingSecret` | Use existing TLS secret | `""` |
 | `service.type` | Service type | `ClusterIP` |
 | `ingress.enabled` | Enable Ingress | `false` |
 | `ingress.className` | Ingress class (nginx, alb, traefik) | `""` |
-| `ingress.hosts` | Ingress hostnames | `[]` |
-| `ingress.tls` | Ingress TLS configuration | `[]` |
+| `autoscaling.enabled` | Enable HorizontalPodAutoscaler | `false` |
+| `podDisruptionBudget.enabled` | Keep pods available during node maintenance | `true` |
+| `extraContainers` | Sidecar containers (auth proxies, log collectors) | `[]` |
 | `resources.limits.cpu` | CPU limit | `1` |
 | `resources.limits.memory` | Memory limit | `768Mi` |
-| `imagePullSecrets` | Image pull secrets for private registries | `[]` |
-| `podSecurityContext` | Pod security context | `{}` |
-| `securityContext` | Container security context | `{}` |
 
 See [values.yaml](values.yaml) for all options.
 
@@ -118,33 +141,65 @@ helm install socket-firewall . -f examples/remote-first.yaml \
 
 ## Proxy Modes
 
-### Transparent Proxy (Default)
+### Path-Based Routing (Recommended)
 
-The firewall automatically proxies public registries (`registry.npmjs.org`, `pypi.org`, etc.) without any configuration. Just point DNS or `/etc/hosts` at the firewall.
+A single domain serves all registries via URL path prefixes. Simplest to deploy and manage.
 
-**Do not add public domains to `registries.*.domains`** - they're already included. Adding them causes duplicate server warnings.
+```yaml
+pathRouting:
+  enabled: true
+  domain: sfw.company.com
+  routes:
+    - path: /npm
+      upstream: https://registry.npmjs.org
+      registry: npm
+    - path: /pypi
+      upstream: https://pypi.org
+      registry: pypi
+    - path: /maven
+      upstream: https://repo1.maven.org/maven2
+      registry: maven
+```
 
-### Custom Domain Mode
+| Registry | Path | Upstream |
+|----------|------|----------|
+| npm | `/npm/` | `registry.npmjs.org` |
+| PyPI | `/pypi/` | `pypi.org` |
+| Maven | `/maven/` | `repo1.maven.org/maven2` |
+| Cargo | `/cargo/` | `index.crates.io` |
+| RubyGems | `/rubygems/` | `rubygems.org` |
+| NuGet | `/nuget/` | `api.nuget.org` |
+| Go | `/go/` | `proxy.golang.org` |
+| Conda | `/conda/` | `conda.anaconda.org` |
 
-Use custom domains when you want a different hostname:
+### Domain-Based Routing
+
+Each registry gets its own subdomain. Use when `pathRouting.enabled` is `false`.
 
 ```yaml
 registries:
   npm:
     enabled: true
     domains:
-      - npm.company.internal  # Your custom domain
+      - npm.company.internal
 ```
 
 Then configure your package manager to use `https://npm.company.internal/`.
 
+### Transparent Proxy
+
+Point internal DNS for public registry domains directly at the firewall IP. No package manager configuration needed, but requires DNS control and trusted TLS certificates matching registry domains.
+
+**Do not add public domains to `registries.*.domains`** when using this approach.
+
 ## Using with Package Managers
+
+Replace `sfw.company.com` with your firewall domain. These examples use path-based routing. For domain-based routing, replace the full URL with your custom domain (e.g., `https://npm.company.internal/`).
 
 ### npm / yarn / pnpm
 
 ```bash
-# Point npm to your firewall proxy
-npm config set registry https://npm.internal.example.com/
+npm config set registry https://sfw.company.com/npm/
 
 # If using self-signed certificates
 npm config set strict-ssl false
@@ -152,11 +207,22 @@ npm config set strict-ssl false
 npm config set cafile /path/to/socket-ca.crt
 ```
 
+`.npmrc` (push via MDM):
+```
+registry=https://sfw.company.com/npm/
+```
+
 ### pip (PyPI)
 
 ```bash
-pip config set global.index-url https://pypi.internal.example.com/simple/
-pip config set global.trusted-host pypi.internal.example.com
+pip config set global.index-url https://sfw.company.com/pypi/simple/
+pip config set global.trusted-host sfw.company.com
+```
+
+`pip.conf` (push via MDM):
+```ini
+[global]
+index-url = https://sfw.company.com/pypi/simple/
 ```
 
 ### Maven
@@ -166,7 +232,7 @@ Add to `~/.m2/settings.xml`:
 <mirrors>
   <mirror>
     <id>socket-central</id>
-    <url>https://maven.internal.example.com/</url>
+    <url>https://sfw.company.com/maven/</url>
     <mirrorOf>central</mirrorOf>
   </mirror>
 </mirrors>
@@ -175,10 +241,7 @@ Add to `~/.m2/settings.xml`:
 ### NuGet (dotnet)
 
 ```bash
-# Add the firewall as a package source
-dotnet nuget add source https://nuget.internal.example.com/v3/index.json -n socket-firewall
-
-# Or via NuGet.Config in your project root
+dotnet nuget add source https://sfw.company.com/nuget/v3/index.json -n socket-firewall
 ```
 
 `NuGet.Config`:
@@ -187,7 +250,7 @@ dotnet nuget add source https://nuget.internal.example.com/v3/index.json -n sock
 <configuration>
   <packageSources>
     <clear />
-    <add key="socket-firewall" value="https://nuget.internal.example.com/v3/index.json" />
+    <add key="socket-firewall" value="https://sfw.company.com/nuget/v3/index.json" />
   </packageSources>
 </configuration>
 ```
@@ -195,17 +258,18 @@ dotnet nuget add source https://nuget.internal.example.com/v3/index.json -n sock
 ### Go
 
 ```bash
-# Set GOPROXY to use the firewall
-export GOPROXY=https://go.internal.example.com,direct
+export GOPROXY=https://sfw.company.com/go/,direct
 
 # For self-signed certificates
-export GOINSECURE=go.internal.example.com
-# Or trust the CA certificate system-wide
+export GOINSECURE=sfw.company.com
 ```
 
-Add to shell profile (`~/.bashrc`, `~/.zshrc`):
-```bash
-export GOPROXY=https://go.internal.example.com,direct
+### Cargo
+
+```toml
+# ~/.cargo/config.toml
+[registries.socket]
+index = "sparse+https://sfw.company.com/cargo/"
 ```
 
 ## Ingress Configuration
