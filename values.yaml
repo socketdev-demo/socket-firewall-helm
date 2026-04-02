@@ -180,6 +180,8 @@ service:
   type: ClusterIP
   httpPort: 80
   httpsPort: 443
+  # Override HTTPS targetPort (set to "http" when TLS is terminated at the load balancer)
+  httpsTargetPort: ""
   annotations: {}
     # service.beta.kubernetes.io/aws-load-balancer-internal: "true"
     # service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
@@ -212,6 +214,8 @@ tls:
   generateSelfSigned: true
   # Use existing secret with tls.crt and tls.key
   existingSecret: ""
+  # Set to true when using cert-manager (remaps tls.crt/tls.key to fullchain.pem/privkey.pem)
+  certManager: false
   # Certificate data (base64 encoded, only used if generateSelfSigned is false and existingSecret is empty)
   certificate: ""
   privateKey: ""
