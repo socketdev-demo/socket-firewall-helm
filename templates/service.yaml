@@ -16,7 +16,7 @@ spec:
       protocol: TCP
       name: http
     - port: {{ .Values.service.httpsPort }}
-      targetPort: https
+      targetPort: {{ if .Values.service.httpsTargetPort }}{{ .Values.service.httpsTargetPort }}{{ else }}https{{ end }}
       protocol: TCP
       name: https
   selector:

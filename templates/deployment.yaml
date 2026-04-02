@@ -195,6 +195,15 @@ spec:
           {{- else if .Values.tls.existingSecret }}
           secret:
             secretName: {{ .Values.tls.existingSecret }}
+            {{- if .Values.tls.certManager }}
+            items:
+              - key: tls.crt
+                path: fullchain.pem
+              - key: tls.key
+                path: privkey.pem
+              - key: ca.crt
+                path: ca.crt
+            {{- end }}
           {{- else }}
           secret:
             secretName: {{ include "socket-firewall.tlsSecretName" . }}
