@@ -21,12 +21,12 @@ helm install socket-firewall . \
   --set socket.apiToken=$SOCKET_API_TOKEN \
   --set pathRouting.enabled=true \
   --set pathRouting.domain=sfw.company.com \
-  --set pathRouting.routes[0].path=/npm \
-  --set pathRouting.routes[0].upstream=https://registry.npmjs.org \
-  --set pathRouting.routes[0].registry=npm \
-  --set pathRouting.routes[1].path=/pypi \
-  --set pathRouting.routes[1].upstream=https://pypi.org \
-  --set pathRouting.routes[1].registry=pypi
+  --set 'pathRouting.routes[0].path=/npm' \
+  --set 'pathRouting.routes[0].upstream=https://registry.npmjs.org' \
+  --set 'pathRouting.routes[0].registry=npm' \
+  --set 'pathRouting.routes[1].path=/pypi' \
+  --set 'pathRouting.routes[1].upstream=https://pypi.org' \
+  --set 'pathRouting.routes[1].registry=pypi'
 
 # Verify deployment
 kubectl get pods -n socket-firewall -l app.kubernetes.io/name=socket-firewall
