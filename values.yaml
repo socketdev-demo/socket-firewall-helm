@@ -4,7 +4,7 @@
 image:
   repository: socketdev/socket-registry-firewall
   # Always pin to a specific version
-  tag: "1.1.153"
+  tag: "1.1.159"
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries
