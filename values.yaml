@@ -3,8 +3,8 @@
 # Image configuration
 image:
   repository: socketdev/socket-registry-firewall
-  # For production, pin to a specific version (e.g., "1.0.33")
-  tag: latest
+  # Always pin to a specific version
+  tag: "1.1.153"
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries
@@ -146,6 +146,9 @@ redis:
   host: redis
   port: 6379
   password: ""
+  # Name of existing secret containing Redis password
+  existingSecret: ""
+  existingSecretKey: "REDIS_PASSWORD"
   db: 0
   timeout: 1000
   poolSize: 100
@@ -161,6 +164,9 @@ splunk:
   enabled: false
   hecUrl: ""
   hecToken: ""
+  # Name of existing secret containing Splunk HEC token
+  existingSecret: ""
+  existingSecretKey: "SPLUNK_HEC_TOKEN"
   index: "sfw-hec"
   source: "sfw-event"
 
@@ -269,6 +275,14 @@ extraContainers: []
 #   env:
 #     - name: UPSTREAM_PORT
 #       value: "443"
+
+# Init container images (override for air-gapped or controlled environments)
+initContainers:
+  certGenerator:
+    image:
+      repository: alpine/openssl
+      tag: "3.3.2"
+      pullPolicy: IfNotPresent
 
 # Service account
 serviceAccount:

@@ -126,9 +126,6 @@ data:
       enabled: true
       host: {{ .Values.redis.host }}
       port: {{ .Values.redis.port }}
-      {{- if .Values.redis.password }}
-      password: {{ .Values.redis.password | quote }}
-      {{- end }}
       db: {{ .Values.redis.db }}
       timeout: {{ .Values.redis.timeout }}
       pool_size: {{ .Values.redis.poolSize }}
@@ -152,7 +149,6 @@ data:
     splunk:
       enabled: true
       hec_url: {{ .Values.splunk.hecUrl }}
-      hec_token: {{ .Values.splunk.hecToken }}
       index: {{ .Values.splunk.index }}
       source: {{ .Values.splunk.source }}
     {{- end }}
