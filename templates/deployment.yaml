@@ -31,7 +31,8 @@ spec:
       {{- if .Values.tls.generateSelfSigned }}
       initContainers:
         - name: generate-certs
-          image: alpine/openssl:3.3.2
+          image: "{{ .Values.initContainers.certGenerator.image.repository }}:{{ .Values.initContainers.certGenerator.image.tag }}"
+          imagePullPolicy: {{ .Values.initContainers.certGenerator.image.pullPolicy }}
           command:
             - /bin/sh
             - -c
@@ -154,6 +155,20 @@ spec:
               value: {{ .Values.service.httpsPort | quote }}
             - name: CONFIG_FILE
               value: /app/socket.yml
+            {{- if and .Values.redis.enabled (or .Values.redis.password .Values.redis.existingSecret) }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "socket-firewall.redisSecretName" . }}
+                  key: {{ .Values.redis.existingSecretKey }}
+            {{- end }}
+            {{- if and .Values.splunk.enabled (or .Values.splunk.hecToken .Values.splunk.existingSecret) }}
+            - name: SPLUNK_HEC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "socket-firewall.splunkSecretName" . }}
+                  key: {{ .Values.splunk.existingSecretKey }}
+            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /app/socket.yml

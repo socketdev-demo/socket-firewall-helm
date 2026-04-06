@@ -71,6 +71,28 @@ Secret name for Socket API token
 {{- end }}
 
 {{/*
+Redis secret name
+*/}}
+{{- define "socket-firewall.redisSecretName" -}}
+{{- if .Values.redis.existingSecret }}
+{{- .Values.redis.existingSecret }}
+{{- else }}
+{{- include "socket-firewall.fullname" . }}-redis
+{{- end }}
+{{- end }}
+
+{{/*
+Splunk secret name
+*/}}
+{{- define "socket-firewall.splunkSecretName" -}}
+{{- if .Values.splunk.existingSecret }}
+{{- .Values.splunk.existingSecret }}
+{{- else }}
+{{- include "socket-firewall.fullname" . }}-splunk
+{{- end }}
+{{- end }}
+
+{{/*
 TLS secret name
 */}}
 {{- define "socket-firewall.tlsSecretName" -}}
