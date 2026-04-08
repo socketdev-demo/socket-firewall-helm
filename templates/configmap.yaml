@@ -27,6 +27,7 @@ data:
       worker_processes: {{ .Values.nginx.workerProcesses }}
       worker_connections: {{ .Values.nginx.workerConnections }}
 
+    {{- /* Path routing and DNS override / domain-based registries can be enabled together. */ -}}
     {{- if .Values.pathRouting.enabled }}
     path_routing:
       enabled: true
@@ -43,7 +44,66 @@ data:
           mode: {{ .mode }}
           {{- end }}
         {{- end }}
-    {{- else }}
+    {{- end }}
+    {{- if .Values.dnsRouting.enabled }}
+    registries:
+      {{- if has "npm" .Values.dnsRouting.registries }}
+      npm:
+        domains:
+          - registry.npmjs.org
+        upstream: https://registry.npmjs.org
+      {{- end }}
+      {{- if has "pypi" .Values.dnsRouting.registries }}
+      pypi:
+        domains:
+          - pypi.org
+          - files.pythonhosted.org
+        upstream: https://pypi.org
+      {{- end }}
+      {{- if has "maven" .Values.dnsRouting.registries }}
+      maven:
+        domains:
+          - repo1.maven.org
+          - repo.maven.apache.org
+        upstream: https://repo1.maven.org/maven2
+      {{- end }}
+      {{- if has "cargo" .Values.dnsRouting.registries }}
+      cargo:
+        domains:
+          - index.crates.io
+        upstream: https://index.crates.io
+      {{- end }}
+      {{- if has "rubygems" .Values.dnsRouting.registries }}
+      rubygems:
+        domains:
+          - rubygems.org
+        upstream: https://rubygems.org
+      {{- end }}
+      {{- if has "openvsx" .Values.dnsRouting.registries }}
+      openvsx:
+        domains:
+          - open-vsx.org
+        upstream: https://open-vsx.org
+      {{- end }}
+      {{- if has "nuget" .Values.dnsRouting.registries }}
+      nuget:
+        domains:
+          - api.nuget.org
+        upstream: https://api.nuget.org
+      {{- end }}
+      {{- if has "go" .Values.dnsRouting.registries }}
+      go:
+        domains:
+          - proxy.golang.org
+        upstream: https://proxy.golang.org
+      {{- end }}
+      {{- if has "conda" .Values.dnsRouting.registries }}
+      conda:
+        domains:
+          - conda.anaconda.org
+        upstream: https://conda.anaconda.org
+      {{- end }}
+    {{- else if not .Values.pathRouting.enabled }}
     registries:
       {{- if .Values.registries.npm.enabled }}
       npm:

@@ -102,6 +102,9 @@ registries:
 | `pathRouting.domain` | Domain for path routing | `""` |
 | `pathRouting.configMode` | Config mode: upstream, middle, or omit for downstream | `""` |
 | `pathRouting.routes` | List of path/upstream/registry route objects | `[]` |
+| **DNS Override Mode** | | |
+| `dnsRouting.enabled` | Enable DNS override (transparent proxy) mode | `false` |
+| `dnsRouting.registries` | List of registries to route via DNS override (npm, pypi, maven, cargo, rubygems, openvsx, nuget, go, conda) | `[]` |
 | **Domain-Based Routing** | | |
 | `registries.<name>.enabled` | Enable registry (npm, pypi, maven, etc.) | `false` |
 | `registries.<name>.domains` | Custom domains for registry | `[]` |
@@ -186,11 +189,43 @@ registries:
 
 Then configure your package manager to use `https://npm.company.internal/`.
 
-### Transparent Proxy
+### DNS Override Mode (Transparent Proxy)
 
 Point internal DNS for public registry domains directly at the firewall IP. No package manager configuration needed, but requires DNS control and trusted TLS certificates matching registry domains.
 
-**Do not add public domains to `registries.*.domains`** when using this approach.
+```yaml
+dnsRouting:
+  enabled: true
+  registries:
+    - npm
+    - pypi
+    - maven
+```
+
+Or via `--set` flags:
+
+```bash
+helm install socket-firewall . \
+  --set socket.apiToken=$SOCKET_API_TOKEN \
+  --set dnsRouting.enabled=true \
+  --set 'dnsRouting.registries={npm,pypi,maven}'
+```
+
+**Required DNS entries** (create A or CNAME records pointing to the firewall IP):
+
+| Registry | Hostnames to reroute |
+|----------|---------------------|
+| npm | `registry.npmjs.org` |
+| PyPI | `pypi.org`, `files.pythonhosted.org` |
+| Maven | `repo1.maven.org`, `repo.maven.apache.org` |
+| Cargo | `index.crates.io` |
+| RubyGems | `rubygems.org` |
+| NuGet | `api.nuget.org` |
+| Go | `proxy.golang.org` |
+| OpenVSX | `open-vsx.org` |
+| Conda | `conda.anaconda.org` |
+
+**Combining with path routing:** DNS override and path routing can be enabled together for hybrid deployments. For example, use path routing for CI/CD systems that can be reconfigured, and DNS override for developer laptops that should work without configuration changes.
 
 ## Using with Package Managers
 
