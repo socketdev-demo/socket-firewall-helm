@@ -104,9 +104,7 @@ registries:
 | `pathRouting.routes` | List of path/upstream/registry route objects | `[]` |
 | **DNS Override Mode** | | |
 | `dnsRouting.enabled` | Enable DNS override (transparent proxy) mode | `false` |
-| `dnsRouting.registries.<name>.enabled` | Enable a specific registry in DNS override mode | varies |
-| `dnsRouting.registries.<name>.domain` | Public hostname to intercept via DNS | canonical hostname |
-| `dnsRouting.registries.<name>.upstream` | Upstream registry URL | canonical URL |
+| `dnsRouting.registries` | List of registries to route via DNS override (npm, pypi, maven, cargo, rubygems, openvsx, nuget, go, conda) | `[]` |
 | **Domain-Based Routing** | | |
 | `registries.<name>.enabled` | Enable registry (npm, pypi, maven, etc.) | `false` |
 | `registries.<name>.domains` | Custom domains for registry | `[]` |
@@ -199,12 +197,9 @@ Point internal DNS for public registry domains directly at the firewall IP. No p
 dnsRouting:
   enabled: true
   registries:
-    npm:
-      enabled: true    # registry.npmjs.org → firewall IP
-    pypi:
-      enabled: true    # pypi.org → firewall IP
-    maven:
-      enabled: false   # disable registries you don't need
+    - npm
+    - pypi
+    - maven
 ```
 
 Or via `--set` flags:
@@ -213,17 +208,16 @@ Or via `--set` flags:
 helm install socket-firewall . \
   --set socket.apiToken=$SOCKET_API_TOKEN \
   --set dnsRouting.enabled=true \
-  --set dnsRouting.registries.openvsx.enabled=false \
-  --set dnsRouting.registries.conda.enabled=false
+  --set 'dnsRouting.registries={npm,pypi,maven}'
 ```
 
 **Required DNS entries** (create A or CNAME records pointing to the firewall IP):
 
-| Registry | Hostname to reroute |
-|----------|-------------------|
+| Registry | Hostnames to reroute |
+|----------|---------------------|
 | npm | `registry.npmjs.org` |
-| PyPI | `pypi.org` |
-| Maven | `repo1.maven.org` |
+| PyPI | `pypi.org`, `files.pythonhosted.org` |
+| Maven | `repo1.maven.org`, `repo.maven.apache.org` |
 | Cargo | `index.crates.io` |
 | RubyGems | `rubygems.org` |
 | NuGet | `api.nuget.org` |
