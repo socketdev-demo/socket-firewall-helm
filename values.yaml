@@ -116,6 +116,21 @@ registries:
     domains:
       - conda.firewall.local
 
+# DNS override mode (transparent proxy with real registry hostnames pointed at the firewall)
+#
+# Can be combined with pathRouting for hybrid deployments (e.g., path routing for
+# CI/CD systems that can be reconfigured, DNS override for developer laptops).
+#
+# Requires:
+#   - Internal DNS control to reroute registry hostnames to the firewall
+#   - TLS certificates that match the real registry hostnames (corporate CA or similar)
+dnsRouting:
+  enabled: false
+  # List which registries to route via DNS override.
+  # Supported values: npm, pypi, maven, cargo, rubygems, openvsx, nuget, go, conda
+  # Example: --set dnsRouting.enabled=true --set 'dnsRouting.registries={npm,pypi}'
+  registries: []
+
 # Proxy tuning
 proxy:
   bufferSize: "16k"

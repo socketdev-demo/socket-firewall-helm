@@ -87,9 +87,38 @@ spec:
               DOMAINS="$DOMAINS,DNS:{{ . }}"
               {{- end }}
               {{- end }}
+              {{- end }}
+              {{- if .Values.dnsRouting.enabled }}
+              {{- if has "npm" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:registry.npmjs.org"
+              {{- end }}
+              {{- if has "pypi" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:pypi.org,DNS:files.pythonhosted.org"
+              {{- end }}
+              {{- if has "maven" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:repo1.maven.org,DNS:repo.maven.apache.org"
+              {{- end }}
+              {{- if has "cargo" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:index.crates.io"
+              {{- end }}
+              {{- if has "rubygems" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:rubygems.org"
+              {{- end }}
+              {{- if has "openvsx" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:open-vsx.org"
+              {{- end }}
+              {{- if has "nuget" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:api.nuget.org"
+              {{- end }}
+              {{- if has "go" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:proxy.golang.org"
+              {{- end }}
+              {{- if has "conda" .Values.dnsRouting.registries }}
+              DOMAINS="$DOMAINS,DNS:conda.anaconda.org"
+              {{- end }}
+              {{- end }}
               # Remove leading comma
               DOMAINS="${DOMAINS#,}"
-              {{- end }}
 
               # Generate CA key and certificate
               openssl genrsa -out /certs/ca.key 2048

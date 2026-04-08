@@ -51,8 +51,44 @@ Configure package managers to use path prefixes:
 Example:
   npm config set registry https://{{ .Values.pathRouting.domain }}/npm/
   pip config set global.index-url https://{{ .Values.pathRouting.domain }}/pypi/simple
+{{- end }}
+{{- if .Values.dnsRouting.enabled }}
 
-{{- else }}
+DNS override mode is enabled. Point internal DNS for these hostnames to the firewall:
+{{- if has "npm" .Values.dnsRouting.registries }}
+  registry.npmjs.org → firewall IP
+{{- end }}
+{{- if has "pypi" .Values.dnsRouting.registries }}
+  pypi.org → firewall IP
+  files.pythonhosted.org → firewall IP
+{{- end }}
+{{- if has "maven" .Values.dnsRouting.registries }}
+  repo1.maven.org → firewall IP
+  repo.maven.apache.org → firewall IP
+{{- end }}
+{{- if has "cargo" .Values.dnsRouting.registries }}
+  index.crates.io → firewall IP
+{{- end }}
+{{- if has "rubygems" .Values.dnsRouting.registries }}
+  rubygems.org → firewall IP
+{{- end }}
+{{- if has "openvsx" .Values.dnsRouting.registries }}
+  open-vsx.org → firewall IP
+{{- end }}
+{{- if has "nuget" .Values.dnsRouting.registries }}
+  api.nuget.org → firewall IP
+{{- end }}
+{{- if has "go" .Values.dnsRouting.registries }}
+  proxy.golang.org → firewall IP
+{{- end }}
+{{- if has "conda" .Values.dnsRouting.registries }}
+  conda.anaconda.org → firewall IP
+{{- end }}
+
+No package manager configuration needed. Traffic routes through the firewall automatically.
+Ensure TLS certificates match these hostnames (corporate CA or cert-manager).
+{{- end }}
+{{- if and (not .Values.pathRouting.enabled) (not .Values.dnsRouting.enabled) }}
 
 Configure package managers to use your custom domains:
 {{- if .Values.registries.npm.enabled }}
