@@ -1,0 +1,46 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Chart.yaml'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Package chart
+        run: |
+          helm package . --destination .deploy
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Update repo index
+        run: |
+          cp .deploy/*.tgz gh-pages/
+          helm repo index gh-pages --url https://socketdev-demo.github.io/socket-firewall-helm
+
+      - name: Push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Release $(ls *.tgz | sed 's/\.tgz//')"
+          git push
