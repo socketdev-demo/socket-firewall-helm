@@ -42,6 +42,8 @@ socket:
   failOpen: true
   # Cache TTL for Socket API responses in seconds (default: 600 = 10 minutes)
   cacheTtl: 600
+  # Log level (default: info). Valid: error, warn, info, debug
+  logLevel: ""
 
 # Path-based routing (recommended — single domain with path prefixes)
 # See: https://docs.socket.dev/docs/registry-mode-configuration-reference
@@ -266,11 +268,16 @@ podAnnotations: {}
 podSecurityContext: {}
   # fsGroup: 101
 
-# Container security context
-securityContext: {}
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 101
+# Container security context (PSS restricted profile)
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
 
 # Node selector
 nodeSelector: {}
@@ -291,13 +298,33 @@ extraContainers: []
 #     - name: UPSTREAM_PORT
 #       value: "443"
 
-# Init container images (override for air-gapped or controlled environments)
+# Init container configuration
 initContainers:
+  copyApp:
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
   certGenerator:
     image:
       repository: alpine/openssl
       tag: "3.3.2"
       pullPolicy: IfNotPresent
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
 
 # Service account
 serviceAccount:

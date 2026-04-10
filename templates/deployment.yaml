@@ -28,11 +28,26 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.tls.generateSelfSigned }}
       initContainers:
+        - name: copy-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh", "-c", "cp -r /app/. /mnt/app/"]
+          {{- with .Values.initContainers.copyApp.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: app-data
+              mountPath: /mnt/app
+        {{- if .Values.tls.generateSelfSigned }}
         - name: generate-certs
           image: "{{ .Values.initContainers.certGenerator.image.repository }}:{{ .Values.initContainers.certGenerator.image.tag }}"
           imagePullPolicy: {{ .Values.initContainers.certGenerator.image.pullPolicy }}
+          {{- with .Values.initContainers.certGenerator.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - /bin/sh
             - -c
@@ -152,7 +167,7 @@ spec:
           volumeMounts:
             - name: tls-certs
               mountPath: /certs
-      {{- end }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -199,6 +214,8 @@ spec:
                   key: {{ .Values.splunk.existingSecretKey }}
             {{- end }}
           volumeMounts:
+            - name: app-data
+              mountPath: /app
             - name: config
               mountPath: /app/socket.yml
               subPath: socket.yml
@@ -206,6 +223,14 @@ spec:
             - name: tls-certs
               mountPath: /etc/nginx/ssl
               readOnly: true
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+            - name: nginx-logs
+              mountPath: /var/log/nginx
+            - name: tmp
+              mountPath: /tmp
           {{- if .Values.healthCheck.enabled }}
           livenessProbe:
             httpGet:
@@ -230,6 +255,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       volumes:
+        - name: app-data
+          emptyDir: {}
         - name: config
           configMap:
             name: {{ include "socket-firewall.fullname" . }}-config
@@ -252,6 +279,14 @@ spec:
           secret:
             secretName: {{ include "socket-firewall.tlsSecretName" . }}
           {{- end }}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
+        - name: nginx-logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

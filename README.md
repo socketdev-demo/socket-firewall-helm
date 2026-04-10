@@ -97,6 +97,7 @@ registries:
 | `socket.existingSecret` | Use existing secret | `""` |
 | `socket.failOpen` | Allow downloads if API unavailable | `true` |
 | `socket.cacheTtl` | Cache TTL in seconds | `600` |
+| `socket.logLevel` | Log level (error, warn, info, debug) | `""` (info) |
 | **Path-Based Routing** | | |
 | `pathRouting.enabled` | Enable path-based routing | `false` |
 | `pathRouting.domain` | Domain for path routing | `""` |
@@ -124,6 +125,11 @@ registries:
 | `extraContainers` | Sidecar containers (auth proxies, log collectors) | `[]` |
 | `resources.limits.cpu` | CPU limit | `1` |
 | `resources.limits.memory` | Memory limit | `768Mi` |
+| **Security** | | |
+| `securityContext` | Container security context | PSS restricted (see values.yaml) |
+| `podSecurityContext` | Pod-level security context | `{}` |
+| `initContainers.copyApp.securityContext` | copy-app init container security context | PSS restricted |
+| `initContainers.certGenerator.securityContext` | generate-certs init container security context | PSS restricted |
 
 See [values.yaml](values.yaml) for all options.
 
@@ -515,6 +521,45 @@ For companies without a corporate network or VPN requirement.
 - **Restrict access** to the firewall if exposed publicly (IP allowlist, VPN, or Zero Trust)
 - **Use real certificates** in production to avoid cert trust issues
 - **Monitor blocked packages** via the `/socket-stats` endpoint or Socket dashboard
+
+## Pod Security Standards
+
+The chart defaults to Pod Security Standards (PSS) **restricted** profile. All containers (including init containers) ship with:
+
+```yaml
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+```
+
+The firewall image writes configuration files to `/app/` at startup and nginx needs writable paths for cache, PID, and log files. The chart handles this with emptyDir volumes:
+
+| Volume | Mount Path | Purpose |
+|--------|-----------|---------|
+| `app-data` | `/app` | Config generator output (config.env, resolvers.conf, nginx.conf) |
+| `nginx-cache` | `/var/cache/nginx` | Proxy cache |
+| `nginx-run` | `/var/run` | nginx PID file |
+| `nginx-logs` | `/var/log/nginx` | Log files |
+| `tmp` | `/tmp` | Config tool binary unpacking |
+
+A `copy-app` init container copies the image's `/app/` contents to the writable emptyDir before the main container starts. The configmap mount at `/app/socket.yml` overlays on top.
+
+To relax security for non-PSS clusters:
+
+```yaml
+securityContext: {}
+initContainers:
+  copyApp:
+    securityContext: {}
+  certGenerator:
+    securityContext: {}
+```
 
 ## Uninstall
 
