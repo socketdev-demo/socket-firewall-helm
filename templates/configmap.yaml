@@ -9,6 +9,9 @@ data:
     # Socket API configuration
     socket:
       fail_open: {{ .Values.socket.failOpen }}
+      {{- if .Values.socket.logLevel }}
+      log_level: {{ .Values.socket.logLevel }}
+      {{- end }}
 
     # Cache configuration
     cache:
