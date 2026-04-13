@@ -203,6 +203,11 @@ service:
   type: ClusterIP
   httpPort: 80
   httpsPort: 443
+  # Container listening ports (defaults to httpPort/httpsPort if not set)
+  # Set these to use unprivileged ports (e.g., 8080/8443) when the Service
+  # needs standard ports (80/443) for load balancer listeners
+  containerHttpPort: ""
+  containerHttpsPort: ""
   # Override HTTPS targetPort (set to "http" when TLS is terminated at the load balancer)
   httpsTargetPort: ""
   annotations: {}
