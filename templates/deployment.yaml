@@ -178,10 +178,10 @@ spec:
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.httpPort }}
+              containerPort: {{ .Values.service.containerHttpPort | default .Values.service.httpPort }}
               protocol: TCP
             - name: https
-              containerPort: {{ .Values.service.httpsPort }}
+              containerPort: {{ .Values.service.containerHttpsPort | default .Values.service.httpsPort }}
               protocol: TCP
           env:
             - name: SOCKET_SECURITY_API_TOKEN
@@ -194,9 +194,9 @@ spec:
             - name: SOCKET_CACHE_TTL
               value: {{ .Values.socket.cacheTtl | quote }}
             - name: HTTP_PORT
-              value: {{ .Values.service.httpPort | quote }}
+              value: {{ (.Values.service.containerHttpPort | default .Values.service.httpPort) | quote }}
             - name: HTTPS_PORT
-              value: {{ .Values.service.httpsPort | quote }}
+              value: {{ (.Values.service.containerHttpsPort | default .Values.service.httpsPort) | quote }}
             - name: CONFIG_FILE
               value: /app/socket.yml
             {{- if and .Values.redis.enabled (or .Values.redis.password .Values.redis.existingSecret) }}
