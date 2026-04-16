@@ -29,6 +29,9 @@ data:
     nginx:
       worker_processes: {{ .Values.nginx.workerProcesses }}
       worker_connections: {{ .Values.nginx.workerConnections }}
+      {{- if .Values.nginx.accessLogBuffer }}
+      access_log_buffer: {{ .Values.nginx.accessLogBuffer }}
+      {{- end }}
 
     {{- /* Path routing and DNS override / domain-based registries can be enabled together. */ -}}
     {{- if .Values.pathRouting.enabled }}

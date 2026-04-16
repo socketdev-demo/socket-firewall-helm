@@ -146,6 +146,9 @@ proxy:
 nginx:
   workerProcesses: 2
   workerConnections: 4096
+  # Access log buffer setting (default: not set, nginx uses its default)
+  # Set to "off" to flush access log lines immediately to stdout
+  accessLogBuffer: ""
 
 # Metadata filtering (removes blocked/warned packages from registry metadata responses)
 metadataFiltering:
