@@ -407,7 +407,26 @@ Create a Certificate resource and reference the secret:
 tls:
   generateSelfSigned: false
   existingSecret: socket-firewall-tls
+  certManager: true
 ```
+
+`certManager: true` remaps `tls.crt` to `fullchain.pem` and `tls.key` to `privkey.pem`,
+which are the filenames nginx expects.
+
+By default the chart also projects `ca.crt` from the secret. ACME issuers like Let's
+Encrypt don't populate `ca.crt` (the chain is in `tls.crt`), so set `includeCaCrt: false`
+to skip it:
+
+```yaml
+tls:
+  generateSelfSigned: false
+  existingSecret: socket-firewall-tls
+  certManager: true
+  includeCaCrt: false
+```
+
+Keep `includeCaCrt: true` (the default) for CA, SelfSigned, or Vault issuers if you want
+the CA cert mounted at `/etc/nginx/ssl/ca.crt` for client trust extraction.
 
 ## Autoscaling
 

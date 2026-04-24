@@ -274,8 +274,10 @@ spec:
                 path: fullchain.pem
               - key: tls.key
                 path: privkey.pem
+              {{- if .Values.tls.includeCaCrt }}
               - key: ca.crt
                 path: ca.crt
+              {{- end }}
             {{- end }}
           {{- else }}
           secret:

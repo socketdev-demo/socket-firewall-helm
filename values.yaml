@@ -247,6 +247,11 @@ tls:
   existingSecret: ""
   # Set to true when using cert-manager (remaps tls.crt/tls.key to fullchain.pem/privkey.pem)
   certManager: false
+  # When certManager is true, also project ca.crt from the secret to /etc/nginx/ssl/ca.crt.
+  # Set to false for ACME issuers like Let's Encrypt that don't populate a separate ca.crt
+  # (the chain is already in tls.crt). Keep true for CA, SelfSigned, or Vault issuers if
+  # you want ca.crt mounted in the pod for client trust extraction.
+  includeCaCrt: true
   # Certificate data (base64 encoded, only used if generateSelfSigned is false and existingSecret is empty)
   certificate: ""
   privateKey: ""
