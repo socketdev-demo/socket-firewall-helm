@@ -199,14 +199,20 @@ data:
       {{- if .Values.redis.ssl }}
       ssl: true
       ssl_verify: {{ .Values.redis.sslVerify }}
-      {{- if .Values.redis.sslCaCert }}
-      ssl_ca_cert: {{ .Values.redis.sslCaCert }}
+      {{- if .Values.redis.sslCaCertExistingSecret }}
+      ssl_ca_cert: /etc/nginx/redis-tls/ca/ca.crt
+      {{- else if .Values.redis.sslCaCert }}
+      ssl_ca_cert: {{ .Values.redis.sslCaCert | quote }}
       {{- end }}
-      {{- if .Values.redis.sslClientCert }}
-      ssl_client_cert: {{ .Values.redis.sslClientCert }}
+      {{- if .Values.redis.sslClientCertExistingSecret }}
+      ssl_client_cert: /etc/nginx/redis-tls/cert/client.crt
+      {{- else if .Values.redis.sslClientCert }}
+      ssl_client_cert: {{ .Values.redis.sslClientCert | quote }}
       {{- end }}
-      {{- if .Values.redis.sslClientKey }}
-      ssl_client_key: {{ .Values.redis.sslClientKey }}
+      {{- if .Values.redis.sslClientKeyExistingSecret }}
+      ssl_client_key: /etc/nginx/redis-tls/key/client.key
+      {{- else if .Values.redis.sslClientKey }}
+      ssl_client_key: {{ .Values.redis.sslClientKey | quote }}
       {{- end }}
       {{- end }}
     {{- end }}
