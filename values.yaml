@@ -175,9 +175,29 @@ redis:
   ttl: 86400
   ssl: false
   sslVerify: true
+  # File path inside the container for the Redis CA certificate.
+  # Use sslCaCertExistingSecret below to have the chart mount a secret
+  # for you. Set sslCaCert directly only if you are delivering the file
+  # via your own volume/init container.
   sslCaCert: ""
+  # Mount a CA cert from an existing Kubernetes secret. The chart mounts
+  # the secret at /etc/nginx/redis-tls/ca/ca.crt and emits that path to
+  # ssl_ca_cert. Required for managed Redis services that use a private
+  # CA (e.g., GCP Memorystore).
+  sslCaCertExistingSecret: ""
+  sslCaCertExistingSecretKey: "ca.crt"
+  # File path inside the container for the Redis client certificate (mTLS).
   sslClientCert: ""
+  # Mount a client cert from an existing secret. Mounted at
+  # /etc/nginx/redis-tls/cert/client.crt.
+  sslClientCertExistingSecret: ""
+  sslClientCertExistingSecretKey: "client.crt"
+  # File path inside the container for the Redis client key (mTLS).
   sslClientKey: ""
+  # Mount a client key from an existing secret. Mounted at
+  # /etc/nginx/redis-tls/key/client.key.
+  sslClientKeyExistingSecret: ""
+  sslClientKeyExistingSecretKey: "client.key"
 
 # Splunk HEC integration
 splunk:

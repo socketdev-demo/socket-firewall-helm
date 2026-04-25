@@ -225,6 +225,21 @@ spec:
             - name: tls-certs
               mountPath: /etc/nginx/ssl
               readOnly: true
+            {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslCaCertExistingSecret }}
+            - name: redis-tls-ca
+              mountPath: /etc/nginx/redis-tls/ca
+              readOnly: true
+            {{- end }}
+            {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslClientCertExistingSecret }}
+            - name: redis-tls-cert
+              mountPath: /etc/nginx/redis-tls/cert
+              readOnly: true
+            {{- end }}
+            {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslClientKeyExistingSecret }}
+            - name: redis-tls-key
+              mountPath: /etc/nginx/redis-tls/key
+              readOnly: true
+            {{- end }}
             - name: nginx-cache
               mountPath: /var/cache/nginx
             - name: nginx-run
@@ -283,6 +298,30 @@ spec:
           secret:
             secretName: {{ include "socket-firewall.tlsSecretName" . }}
           {{- end }}
+        {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslCaCertExistingSecret }}
+        - name: redis-tls-ca
+          secret:
+            secretName: {{ .Values.redis.sslCaCertExistingSecret }}
+            items:
+              - key: {{ .Values.redis.sslCaCertExistingSecretKey }}
+                path: ca.crt
+        {{- end }}
+        {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslClientCertExistingSecret }}
+        - name: redis-tls-cert
+          secret:
+            secretName: {{ .Values.redis.sslClientCertExistingSecret }}
+            items:
+              - key: {{ .Values.redis.sslClientCertExistingSecretKey }}
+                path: client.crt
+        {{- end }}
+        {{- if and .Values.redis.enabled .Values.redis.ssl .Values.redis.sslClientKeyExistingSecret }}
+        - name: redis-tls-key
+          secret:
+            secretName: {{ .Values.redis.sslClientKeyExistingSecret }}
+            items:
+              - key: {{ .Values.redis.sslClientKeyExistingSecretKey }}
+                path: client.key
+        {{- end }}
         - name: nginx-cache
           emptyDir: {}
         - name: nginx-run

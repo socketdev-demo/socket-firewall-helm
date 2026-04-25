@@ -471,6 +471,56 @@ helm install socket-firewall . \
 kubectl rollout restart deployment/socket-firewall
 ```
 
+## Redis Cache
+
+Enable an external Redis cache for Socket API lookups when running multiple firewall replicas. Without Redis, each pod maintains its own in-memory cache.
+
+```yaml
+redis:
+  enabled: true
+  host: redis.default.svc.cluster.local
+  port: 6379
+  existingSecret: redis-credentials
+  existingSecretKey: REDIS_PASSWORD
+```
+
+### Redis TLS
+
+For Redis instances that require TLS (managed services like GCP Memorystore, AWS ElastiCache with in-transit encryption, or Azure Cache), enable `redis.ssl`.
+
+If the Redis server uses a CA that isn't in the system trust store (this is the default for **GCP Memorystore**, which uses a per-instance private CA), provide the CA via an existing Kubernetes secret. The chart mounts it as a file at a known path inside the container.
+
+```bash
+# Store the CA cert in a secret
+kubectl create secret generic redis-ca \
+  --from-file=ca.crt=/path/to/redis-ca.pem
+```
+
+```yaml
+redis:
+  enabled: true
+  host: 10.0.0.5
+  port: 6379
+  ssl: true
+  sslVerify: true
+  sslCaCertExistingSecret: redis-ca
+  sslCaCertExistingSecretKey: ca.crt   # default
+```
+
+For mutual TLS, add the client cert and key the same way:
+
+```yaml
+redis:
+  ssl: true
+  sslCaCertExistingSecret: redis-ca
+  sslClientCertExistingSecret: redis-client
+  sslClientCertExistingSecretKey: client.crt
+  sslClientKeyExistingSecret: redis-client
+  sslClientKeyExistingSecretKey: client.key
+```
+
+The `sslCaCert`, `sslClientCert`, and `sslClientKey` fields remain available as raw file paths if you are delivering the cert files via your own volume or init container.
+
 ## Deployment Recommendations
 
 ### Corporate Network (On-Prem or VPN)
