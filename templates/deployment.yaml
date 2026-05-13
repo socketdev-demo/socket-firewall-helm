@@ -215,12 +215,6 @@ spec:
                   name: {{ include "socket-firewall.splunkSecretName" . }}
                   key: {{ .Values.splunk.existingSecretKey }}
             {{- end }}
-            {{- /*
-              Upstream-auth env vars. Three routing modes, mirrors configmap.yaml precedence:
-                - pathBased   → range pathRouting.routes
-                - domainBased → range .Values.registries (only active when neither other mode is on)
-                - dnsRouting  → no token support in this mode (omitted intentionally)
-            */ -}}
             {{- $pathBased   := .Values.pathRouting.enabled -}}
             {{- $domainBased := and (not .Values.pathRouting.enabled) (not .Values.dnsRouting.enabled) -}}
             {{- if $pathBased }}
