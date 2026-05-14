@@ -215,6 +215,29 @@ spec:
                   name: {{ include "socket-firewall.splunkSecretName" . }}
                   key: {{ .Values.splunk.existingSecretKey }}
             {{- end }}
+            {{- $pathBased   := .Values.pathRouting.enabled -}}
+            {{- $domainBased := and (not .Values.pathRouting.enabled) (not .Values.dnsRouting.enabled) -}}
+            {{- if $pathBased }}
+            {{- range .Values.pathRouting.routes }}
+            {{- if .upstreamToken }}
+            - name: {{ .upstreamToken }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .upstreamTokenSecret }}
+                  key: {{ .upstreamToken }}
+            {{- end }}
+            {{- end }}
+            {{- else if $domainBased }}
+            {{- range $eco, $cfg := .Values.registries }}
+            {{- if and $cfg.enabled $cfg.upstreamToken }}
+            - name: {{ $cfg.upstreamToken }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $cfg.upstreamTokenSecret }}
+                  key: {{ $cfg.upstreamToken }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
           volumeMounts:
             - name: app-data
               mountPath: /app

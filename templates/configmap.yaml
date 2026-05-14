@@ -49,6 +49,9 @@ data:
           {{- if .mode }}
           mode: {{ .mode }}
           {{- end }}
+          {{- if .upstreamToken }}
+          upstream_token: {{ .upstreamToken }}
+          {{- end }}
         {{- end }}
     {{- end }}
     {{- if .Values.dnsRouting.enabled }}
@@ -117,6 +120,9 @@ data:
           {{- range .Values.registries.npm.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.npm.upstreamToken }}
+        upstream_token: {{ .Values.registries.npm.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.pypi.enabled }}
       pypi:
@@ -124,6 +130,9 @@ data:
           {{- range .Values.registries.pypi.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.pypi.upstreamToken }}
+        upstream_token: {{ .Values.registries.pypi.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.maven.enabled }}
       maven:
@@ -131,6 +140,9 @@ data:
           {{- range .Values.registries.maven.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.maven.upstreamToken }}
+        upstream_token: {{ .Values.registries.maven.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.rubygems.enabled }}
       rubygems:
@@ -138,6 +150,9 @@ data:
           {{- range .Values.registries.rubygems.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.rubygems.upstreamToken }}
+        upstream_token: {{ .Values.registries.rubygems.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.cargo.enabled }}
       cargo:
@@ -145,6 +160,9 @@ data:
           {{- range .Values.registries.cargo.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.cargo.upstreamToken }}
+        upstream_token: {{ .Values.registries.cargo.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.openvsx.enabled }}
       openvsx:
@@ -152,6 +170,9 @@ data:
           {{- range .Values.registries.openvsx.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.openvsx.upstreamToken }}
+        upstream_token: {{ .Values.registries.openvsx.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.nuget.enabled }}
       nuget:
@@ -159,6 +180,9 @@ data:
           {{- range .Values.registries.nuget.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.nuget.upstreamToken }}
+        upstream_token: {{ .Values.registries.nuget.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.go.enabled }}
       go:
@@ -166,6 +190,9 @@ data:
           {{- range .Values.registries.go.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.go.upstreamToken }}
+        upstream_token: {{ .Values.registries.go.upstreamToken }}
+        {{- end }}
       {{- end }}
       {{- if .Values.registries.conda.enabled }}
       conda:
@@ -173,6 +200,9 @@ data:
           {{- range .Values.registries.conda.domains }}
           - {{ . }}
           {{- end }}
+        {{- if .Values.registries.conda.upstreamToken }}
+        upstream_token: {{ .Values.registries.conda.upstreamToken }}
+        {{- end }}
       {{- end }}
     {{- end }}
 

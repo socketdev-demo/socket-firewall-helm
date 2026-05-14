@@ -52,10 +52,14 @@ pathRouting:
   domain: ""
   # config_mode: upstream or middle (omit for downstream, which is default)
   configMode: ""
+  # upstreamToken / upstreamTokenSecret on a route enable upstream auth.
+  # See: https://docs.socket.dev/docs/registry-mode-configuration-reference
   routes: []
   # - path: /npm
   #   upstream: https://registry.npmjs.org
   #   registry: npm
+  #   upstreamToken: NPM_AUTH_TOKEN
+  #   upstreamTokenSecret: socket-upstream-tokens
   # - path: /pypi
   #   upstream: https://pypi.org
   #   registry: pypi
@@ -68,6 +72,9 @@ pathRouting:
   # - path: /rubygems
   #   upstream: https://rubygems.org
   #   registry: rubygems
+  # - path: /openvsx
+  #   upstream: https://open-vsx.org
+  #   registry: openvsx
   # - path: /nuget
   #   upstream: https://api.nuget.org
   #   registry: nuget
@@ -79,12 +86,15 @@ pathRouting:
   #   registry: conda
 
 # Domain-based routing (alternative — each registry gets its own subdomain)
-# Only used when pathRouting.enabled is false
+# Only used when pathRouting.enabled is false.
+# upstreamToken / upstreamTokenSecret on a registry enable upstream auth.
 registries:
   npm:
     enabled: false
     domains:
       - npm.company.local
+    # upstreamToken: NPM_AUTH_TOKEN
+    # upstreamTokenSecret: socket-upstream-tokens
   pypi:
     enabled: false
     domains:
