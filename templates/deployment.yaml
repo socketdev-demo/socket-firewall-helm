@@ -223,7 +223,7 @@ spec:
             - name: {{ .upstreamToken }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .upstreamTokenSecret }}
+                  name: {{ .upstreamTokenSecret | default (include "socket-firewall.upstreamTokensSecretName" $) }}
                   key: {{ .upstreamToken }}
             {{- end }}
             {{- end }}
@@ -233,7 +233,7 @@ spec:
             - name: {{ $cfg.upstreamToken }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ $cfg.upstreamTokenSecret }}
+                  name: {{ $cfg.upstreamTokenSecret | default (include "socket-firewall.upstreamTokensSecretName" $) }}
                   key: {{ $cfg.upstreamToken }}
             {{- end }}
             {{- end }}

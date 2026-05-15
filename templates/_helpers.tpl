@@ -102,3 +102,10 @@ TLS secret name
 {{- include "socket-firewall.fullname" . }}-tls
 {{- end }}
 {{- end }}
+
+{{/*
+Chart-managed upstream-tokens Secret name
+*/}}
+{{- define "socket-firewall.upstreamTokensSecretName" -}}
+{{- include "socket-firewall.fullname" . }}-upstream-tokens
+{{- end }}
