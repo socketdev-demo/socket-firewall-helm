@@ -45,6 +45,14 @@ socket:
   # Log level (default: info). Valid: error, warn, info, debug
   logLevel: ""
 
+# Upstream auth tokens. Two modes:
+# If set, chart provisions a Secret <release>-upstream-tokens with these keys;
+# routes/registries without `upstreamTokenSecret` default to it.
+upstreamTokens:
+  values: {}
+  # NPM_AUTH_TOKEN: "npm_yourtokenhere"
+  # PYPI_AUTH_TOKEN: "user:password"
+
 # Path-based routing (recommended — single domain with path prefixes)
 # See: https://docs.socket.dev/docs/registry-mode-configuration-reference
 pathRouting:
