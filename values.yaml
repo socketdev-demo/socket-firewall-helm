@@ -37,13 +37,45 @@ socket:
   # Name of existing secret containing SOCKET_SECURITY_API_TOKEN
   existingSecret: ""
   existingSecretKey: "SOCKET_SECURITY_API_TOKEN"
+  # Socket.dev API base URL
+  apiUrl: "https://api.socket.dev"
   # Allow package downloads if Socket API is unavailable (default: true)
   # Set to false for strict security (blocks all packages if API is down)
   failOpen: true
+  # Allow packages Socket has not yet scanned
+  failOpenUnscanned: true
+  # Pull config from Socket dashboard (wholesale overrides values.yaml settings)
+  useRemoteConfig: false
+  # Remote config refresh interval (only used when useRemoteConfig=true)
+  configRefreshInterval: "60s"
+  # Bearer token interpretation: "string" (literal token) or "env" (env var name)
+  bearerTokenType: "string"
+  # Send usage/decision telemetry to Socket
+  telemetryEnabled: true
+  # Telemetry API version: v1 (batched) or v0 (legacy per-event)
+  telemetryApiVersion: "v1"
+  # Include ignore_reason in decision events sent to telemetry/webhook/splunk
+  saveIgnoreReason: false
+  # Header echoed in logs/telemetry for request correlation
+  requestIdHeader: "X-Socket-Request-ID"
+  # Add X-Socket-Unscanned header to allowed unscanned packages
+  exposeUnscannedHeader: false
   # Cache TTL for Socket API responses in seconds (default: 600 = 10 minutes)
   cacheTtl: 600
   # Log level (default: info). Valid: error, warn, info, debug
   logLevel: ""
+  # Max bytes per SOCKET_DECISION log line (0 disables splitting)
+  logMaxBodySize: 3900
+  # Emit access logs for NO_ROUTE requests
+  logNoRoute: true
+  # Force-enable debug logging (auto-enabled when logLevel=debug)
+  debugLoggingEnabled: false
+  # Rewrite download/package URLs in metadata responses (e.g. Cargo config.json)
+  rewritePackageUrls: true
+  # Ecosystems where recentlyPublished alerts are enforced.
+  # Empty list = enforced globally per Socket API severity.
+  # Valid: npm, pypi, maven, cargo, rubygems, nuget, go, conda, openvsx
+  recentlyPublishedEnabledEcosystems: []
 
 # Upstream auth tokens. Two modes:
 # If set, chart provisions a Secret <release>-upstream-tokens with these keys;
