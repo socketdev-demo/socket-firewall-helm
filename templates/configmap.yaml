@@ -259,12 +259,16 @@ data:
     webhook:
       enabled: true
       url: {{ .Values.webhook.url }}
+      auth_header: {{ .Values.webhook.authHeader | quote }}
       ssl_verify: {{ .Values.webhook.sslVerify }}
       timeout: {{ .Values.webhook.timeout }}
       on_block: {{ .Values.webhook.onBlock }}
       on_warn: {{ .Values.webhook.onWarn }}
       on_monitor: {{ .Values.webhook.onMonitor }}
       on_ignore: {{ .Values.webhook.onIgnore }}
+      batch_enabled: {{ .Values.webhook.batchEnabled }}
+      batch_size: {{ .Values.webhook.batchSize }}
+      batch_period: {{ .Values.webhook.batchPeriod }}
     {{- end }}
 
     lua:

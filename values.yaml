@@ -257,12 +257,20 @@ splunk:
 webhook:
   enabled: false
   url: ""
+  # Auth header sent to the webhook endpoint (e.g. "Authorization: Bearer <token>")
+  authHeader: ""
   sslVerify: true
   timeout: 5000
   onBlock: true
   onWarn: true
   onMonitor: true
   onIgnore: false
+  # Event batching: deliver events in batches instead of one request per decision
+  batchEnabled: false
+  # Max batch payload size in bytes (default: 512 KiB)
+  batchSize: 524288
+  # Batch flush interval in seconds
+  batchPeriod: 5
 
 # Service configuration
 service:
