@@ -37,8 +37,6 @@ socket:
   # Name of existing secret containing SOCKET_SECURITY_API_TOKEN
   existingSecret: ""
   existingSecretKey: "SOCKET_SECURITY_API_TOKEN"
-  # Socket.dev API base URL
-  apiUrl: "https://api.socket.dev"
   # Allow package downloads if Socket API is unavailable (default: true)
   # Set to false for strict security (blocks all packages if API is down)
   failOpen: true

@@ -8,7 +8,6 @@ data:
   socket.yml: |
     # Socket API configuration
     socket:
-      api_url: {{ .Values.socket.apiUrl | quote }}
       fail_open: {{ .Values.socket.failOpen }}
       fail_open_unscanned: {{ .Values.socket.failOpenUnscanned }}
       use_remote_config: {{ .Values.socket.useRemoteConfig }}
