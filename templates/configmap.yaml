@@ -278,10 +278,39 @@ data:
     webhook:
       enabled: true
       url: {{ .Values.webhook.url }}
+      auth_header: {{ .Values.webhook.authHeader | quote }}
       ssl_verify: {{ .Values.webhook.sslVerify }}
       timeout: {{ .Values.webhook.timeout }}
       on_block: {{ .Values.webhook.onBlock }}
       on_warn: {{ .Values.webhook.onWarn }}
       on_monitor: {{ .Values.webhook.onMonitor }}
       on_ignore: {{ .Values.webhook.onIgnore }}
+      batch_enabled: {{ .Values.webhook.batchEnabled }}
+      batch_size: {{ .Values.webhook.batchSize }}
+      batch_period: {{ .Values.webhook.batchPeriod }}
+    {{- end }}
+
+    lua:
+      cache_size: {{ .Values.lua.cacheSize | quote }}
+      stats_size: {{ .Values.lua.statsSize | quote }}
+
+    {{- if .Values.clientIp.header }}
+    client_ip:
+      header: {{ .Values.clientIp.header | quote }}
+      recursive: {{ .Values.clientIp.recursive }}
+      {{- if .Values.clientIp.trustedProxies }}
+      trusted_proxies:
+        {{- range .Values.clientIp.trustedProxies }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- if .Values.forwardProxy.enabled }}
+    forward_proxy:
+      enabled: true
+      port: {{ .Values.forwardProxy.port }}
+      max_tunnel_lifetime_seconds: {{ .Values.forwardProxy.maxTunnelLifetimeSeconds }}
+      max_connections_per_source: {{ .Values.forwardProxy.maxConnectionsPerSource }}
+      proxy_protocol_port: {{ .Values.forwardProxy.proxyProtocolPort }}
     {{- end }}

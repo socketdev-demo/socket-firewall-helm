@@ -185,6 +185,11 @@ spec:
             - name: https
               containerPort: {{ .Values.service.containerHttpsPort | default .Values.service.httpsPort }}
               protocol: TCP
+            {{- if .Values.forwardProxy.enabled }}
+            - name: forward-proxy
+              containerPort: {{ .Values.forwardProxy.port }}
+              protocol: TCP
+            {{- end }}
           env:
             - name: SOCKET_SECURITY_API_TOKEN
               valueFrom:

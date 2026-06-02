@@ -19,5 +19,11 @@ spec:
       targetPort: {{ if .Values.service.httpsTargetPort }}{{ .Values.service.httpsTargetPort }}{{ else }}https{{ end }}
       protocol: TCP
       name: https
+    {{- if .Values.forwardProxy.enabled }}
+    - port: {{ .Values.forwardProxy.port }}
+      targetPort: forward-proxy
+      protocol: TCP
+      name: forward-proxy
+    {{- end }}
   selector:
     {{- include "socket-firewall.selectorLabels" . | nindent 4 }}

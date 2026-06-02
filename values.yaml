@@ -198,6 +198,31 @@ nginx:
   # Set to "off" to flush access log lines immediately to stdout
   accessLogBuffer: ""
 
+# Lua shared-memory zone sizes (raise if cache/stats dictionaries fill up)
+lua:
+  cacheSize: "10m"
+  statsSize: "1m"
+
+# Client IP detection from forwarded headers (for deployments behind LBs/ingress)
+# When header is empty, the nginx realip module is disabled.
+clientIp:
+  # Header to read for the real client IP (e.g., "X-Forwarded-For", "True-Client-IP")
+  header: ""
+  # CIDRs allowed to set the header
+  trustedProxies: []
+  # Walk the header to find the originating IP
+  recursive: true
+
+# HTTP CONNECT forward-proxy listener (for CASB-shaped traffic).
+# Requires OpenResty / nginx with stream{} + ngx_stream_lua_module.
+# When enabled, the chart exposes the CONNECT port on the container and Service.
+forwardProxy:
+  enabled: false
+  port: 3128
+  maxTunnelLifetimeSeconds: 600
+  maxConnectionsPerSource: 64
+  proxyProtocolPort: 8081
+
 # Metadata filtering (removes blocked/warned packages from registry metadata responses)
 metadataFiltering:
   enabled: false
@@ -262,12 +287,20 @@ splunk:
 webhook:
   enabled: false
   url: ""
+  # Auth header sent to the webhook endpoint (e.g. "Authorization: Bearer <token>")
+  authHeader: ""
   sslVerify: true
   timeout: 5000
   onBlock: true
   onWarn: true
   onMonitor: true
   onIgnore: false
+  # Event batching: deliver events in batches instead of one request per decision
+  batchEnabled: false
+  # Max batch payload size in bytes (default: 512 KiB)
+  batchSize: 524288
+  # Batch flush interval in seconds
+  batchPeriod: 5
 
 # Service configuration
 service:
