@@ -2,6 +2,12 @@
 
 Kubernetes Helm chart for deploying the Socket.dev Registry Firewall. Blocks vulnerable and malicious packages before they reach your cluster.
 
+> **Note — chart source has moved.** Development now lives in
+> [`SocketDev/socket-registry-firewall-deployments`](https://github.com/SocketDev/socket-registry-firewall-deployments) under `helm/`.
+> This repository now only **hosts the published chart**, served from its `gh-pages` branch at
+> `https://socketdev-demo.github.io/socket-firewall-helm`. The download URL is unchanged — existing
+> `helm repo add` users are unaffected. Open changes against the monorepo, not here.
+
 ## Prerequisites
 
 - Kubernetes 1.21+
