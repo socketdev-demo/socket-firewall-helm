@@ -378,9 +378,16 @@ healthCheck:
 # Pod annotations
 podAnnotations: {}
 
-# Pod security context
-podSecurityContext: {}
-  # fsGroup: 101
+# Pod security context.
+# fsGroup is required for the default self-signed cert path: the generate-certs
+# init container runs as uid 1000 and writes the key mode 0600 into a shared
+# emptyDir, while the main container runs under the image's nginx group (GID
+# 1001). fsGroup makes the mounted key group-readable and adds the GID to the
+# container's supplementary groups so nginx can load it. On OpenShift (which
+# assigns fsGroup from the namespace range), clear this:
+#   --set podSecurityContext.fsGroup=null
+podSecurityContext:
+  fsGroup: 1001
 
 # Container security context (PSS restricted profile)
 securityContext:
