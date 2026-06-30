@@ -397,6 +397,12 @@ POD=$(kubectl get pod -l app.kubernetes.io/name=socket-firewall -o jsonpath='{.i
 kubectl exec $POD -- cat /etc/nginx/ssl/ca.crt > socket-ca.crt
 ```
 
+The chart sets `podSecurityContext.fsGroup: 1001` so nginx (which runs under the
+image's nginx group, GID 1001) can read the key the init container generates.
+Without it the pod fails to start with `cannot load certificate key ... Permission
+denied`. On OpenShift, where the platform assigns `fsGroup` from the namespace
+range, clear it with `--set podSecurityContext.fsGroup=null`.
+
 ### Existing Certificate
 
 ```yaml
