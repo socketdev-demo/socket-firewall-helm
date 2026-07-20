@@ -90,11 +90,14 @@ registries:
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `image.repository` | Docker image | `socketdev/socket-registry-firewall` |
-| `image.tag` | Image tag | `latest` |
-| `image.pullPolicy` | Image pull policy | `IfNotPresent` |
+| `image.tag` | Image tag. Empty means track the chart's `appVersion` (single source of truth). Set to override. | `""` |
+| `image.pullPolicy` | Image pull policy | `Always` |
 | `replicaCount` | Number of replicas (ignored if autoscaling enabled) | `1` |
 | `socket.apiToken` | Socket API token | `""` |
 | `socket.existingSecret` | Use existing secret | `""` |
+| `socket.bearerToken` | Client auth gate token. When set, inbound requests must present `Authorization: Bearer <token>`. Empty disables the gate. | `""` |
+| `socket.bearerTokenExistingSecret` | Existing secret holding the bearer token (instead of `socket.bearerToken`) | `""` |
+| `socket.bearerTokenExistingSecretKey` | Key within the bearer-token secret | `SOCKET_BEARER_TOKEN` |
 | `socket.failOpen` | Allow downloads if API unavailable | `true` |
 | `socket.cacheTtl` | Cache TTL in seconds | `600` |
 | `socket.logLevel` | Log level (error, warn, info, debug) | `""` (info) |
@@ -111,20 +114,50 @@ registries:
 | `registries.<name>.domains` | Custom domains for registry | `[]` |
 | **Integrations** | | |
 | `metadataFiltering.enabled` | Filter blocked packages from metadata | `false` |
+| `externalRegistryCooldown.enabled` | Publish-date enforcement for ecosystems Socket doesn't natively support | `false` |
 | `redis.enabled` | Enable Redis caching for API lookups | `false` |
 | `splunk.enabled` | Enable Splunk HEC integration | `false` |
 | `webhook.enabled` | Enable webhook event delivery | `false` |
+| **Advanced Config** | | |
+| `ports.disableHttp` / `ports.disableHttps` | Disable a listener entirely | `false` |
+| `ssl.caCert` | CA trust bundle (file path) merged into the server trust store | `""` |
+| `extraConfig` | Raw `socket.yml` passthrough (arbitrary/new top-level sections) | `{}` |
 | **Infrastructure** | | |
 | `tls.generateSelfSigned` | Generate self-signed certs | `true` |
 | `tls.existingSecret` | Use existing TLS secret | `""` |
 | `service.type` | Service type | `ClusterIP` |
+| `service.externalTrafficPolicy` | `Cluster` or `Local` (NodePort/LoadBalancer only); use `Local` to preserve client source IPs | `""` |
 | `ingress.enabled` | Enable Ingress | `false` |
 | `ingress.className` | Ingress class (nginx, alb, traefik) | `""` |
 | `autoscaling.enabled` | Enable HorizontalPodAutoscaler | `false` |
 | `podDisruptionBudget.enabled` | Keep pods available during node maintenance | `true` |
+| `topologySpreadConstraints` | Evenly spread replicas across zones/nodes | `[]` |
 | `extraContainers` | Sidecar containers (auth proxies, log collectors) | `[]` |
-| `resources.limits.cpu` | CPU limit | `1` |
-| `resources.limits.memory` | Memory limit | `768Mi` |
+| `resources.limits.cpu` | CPU limit | `4` |
+| `resources.limits.memory` | Memory limit | `8Gi` |
+| `terminationGracePeriodSeconds` | Pod grace period; set ≥ `forwardProxy.maxTunnelLifetimeSeconds` when CONNECT is enabled | `""` (30s) |
+| **Forward Proxy (HTTP CONNECT)** | _CASB CONNECT tunnels — see [section below](#forward-proxy-http-connect)_ | |
+| `forwardProxy.enabled` | Enable the CONNECT listener (requires image ≥ 1.1.275) | `false` |
+| `forwardProxy.port` | CONNECT listener port | `3128` |
+| `forwardProxy.maxTunnelLifetimeSeconds` | Hard cap on a single tunnel's lifetime | `600` |
+| `forwardProxy.maxConnectionsPerSource` | Per-source-IP concurrent tunnel cap | `64` |
+| `forwardProxy.proxyProtocolPort` | Internal loopback PROXY-protocol port | `8081` |
+| `forwardProxy.skipStreamLuaCheck` | Bypass nginx stream-lua capability check (custom images only) | `false` |
+| `forwardProxy.service.enabled` | Create a dedicated L4 Service for CONNECT (required to expose it externally) | `false` |
+| `forwardProxy.service.type` | `LoadBalancer` (NLB) or `NodePort` — **not** behind an ALB/L7 ingress | `LoadBalancer` |
+| `forwardProxy.service.annotations` | Annotations for the L4 Service (e.g. AWS NLB) | `{}` |
+| `forwardProxy.service.externalTrafficPolicy` | `Cluster` or `Local` (NodePort/LoadBalancer only); use `Local` to preserve client source IPs for the per-source-IP tunnel cap and logs | `""` |
+| `forwardProxy.service.loadBalancerSourceRanges` | CIDRs allowed to reach the CONNECT listener (your CASB egress) | `[]` |
+| **Metrics & Monitoring** | _Prometheus metrics — see [section below](#metrics--monitoring)_ | |
+| `metrics.enabled` | Expose the `/metrics` port on the container and Service | `true` |
+| `metrics.minImageVersion` | Minimum firewall image version (semver) that serves `/metrics`; older tags are auto-suppressed, non-semver tags (`latest`, digests) are assumed new enough | `"1.1.343"` |
+| `metrics.port` | Port the firewall's metrics listener binds to (fixed at 9145 in the image) | `9145` |
+| `metrics.podAnnotations` | Add `prometheus.io/{scrape,port,path}` pod annotations for annotation-based discovery | `false` |
+| `metrics.serviceMonitor.enabled` | Create a Prometheus Operator ServiceMonitor (requires the CRDs) | `false` |
+| `metrics.serviceMonitor.namespace` | Namespace for the ServiceMonitor (defaults to the release namespace) | `""` |
+| `metrics.serviceMonitor.interval` | Scrape interval | `30s` |
+| `metrics.serviceMonitor.scrapeTimeout` | Scrape timeout | `10s` |
+| `metrics.serviceMonitor.labels` | Extra labels (e.g. to match your Prometheus `serviceMonitorSelector`) | `{}` |
 | **Security** | | |
 | `securityContext` | Container security context | PSS restricted (see values.yaml) |
 | `podSecurityContext` | Pod-level security context | `{}` |
@@ -132,6 +165,61 @@ registries:
 | `initContainers.certGenerator.securityContext` | generate-certs init container security context | PSS restricted |
 
 See [values.yaml](values.yaml) for all options.
+
+### Client Auth Gate (bearer token)
+
+By default the firewall accepts requests from anyone who can reach it. To require
+callers to authenticate, set a bearer token — the firewall then rejects any request
+without a matching `Authorization: Bearer <token>` header.
+
+```bash
+# Inline token (chart creates the secret for you)
+helm install fw . \
+  --set socket.apiToken=$SOCKET_API_TOKEN \
+  --set socket.bearerToken=$MY_SHARED_SECRET
+
+# Or reference a secret you manage
+kubectl create secret generic fw-bearer \
+  --from-literal=SOCKET_BEARER_TOKEN=$MY_SHARED_SECRET
+helm install fw . \
+  --set socket.apiToken=$SOCKET_API_TOKEN \
+  --set socket.bearerTokenExistingSecret=fw-bearer
+```
+
+The token is mounted into the pod as the `SOCKET_BEARER_TOKEN` env var, which the
+firewall reads at startup. Clients (npm, pip, CI, etc.) must send the same value in
+their `Authorization` header. Leaving both values empty keeps the gate disabled.
+
+### Full Configuration Coverage
+
+The chart renders the complete `socket.yml` schema — every key in the firewall's
+[`socket.defaults.yml`](https://github.com/SocketDev/socket-nginx-firewall/blob/main/socket.defaults.yml)
+reference is expressible through values. This includes the `socket`, `cache`,
+`proxy`, `nginx`, `ports`, `ssl`, `path_routing` (incl. per-route Artifactory/Nexus
+keys and `private_registry` auto-discovery), `registries`, `metadata_filtering`,
+`external_registry_cooldown`, `redis`, `splunk`, `webhook`, `client_ip`, `lua`, and
+`forward_proxy` sections. Keys default to the firewall's coded defaults, so anything
+you leave unset behaves exactly as before.
+
+Deployment-specific string keys (paths, hostnames, tokens, CA certs) are only
+emitted into `socket.yml` when you set them; leaving them empty keeps the firewall
+default.
+
+#### Raw-config passthrough (`extraConfig`)
+
+For any key the chart doesn't expose — or a brand-new upstream config section — use
+`extraConfig`. Its contents are merged verbatim into `socket.yml` as top-level YAML:
+
+```yaml
+extraConfig:
+  some_new_section:
+    some_key: some_value
+```
+
+> **Note:** `extraConfig` is appended as top-level YAML. Don't repeat a section the
+> chart already renders (e.g. `socket:`, `nginx:`), as that produces duplicate keys.
+> Use the dedicated values for those sections and reserve `extraConfig` for sections
+> the chart doesn't own.
 
 ### Example Configurations
 
@@ -338,6 +426,9 @@ ingress:
 
 ### AWS ALB Ingress
 
+> An ALB cannot carry the HTTP CONNECT method. For CASB CONNECT tunnels, see
+> [Forward Proxy (HTTP CONNECT)](#forward-proxy-http-connect).
+
 ```yaml
 ingress:
   enabled: true
@@ -380,6 +471,30 @@ ingress:
         - pypi.org
 ```
 
+## Forward Proxy (HTTP CONNECT)
+
+Some CASBs (e.g. Netskope or Zscaler in proxy-chaining mode) reach upstream
+proxies via an HTTP `CONNECT` tunnel instead of a standard HTTPS request. Enable
+the firewall's CONNECT listener with `forwardProxy.enabled` (requires image
+≥ 1.1.275).
+
+Because `CONNECT` is a raw TCP tunnel, it cannot pass through a Layer-7 Ingress
+(nginx, Traefik, AWS ALB) — those terminate TLS and parse HTTP. Expose it with a
+**Layer-4 (TCP passthrough) load balancer** by setting
+`forwardProxy.service.enabled=true`, which creates a dedicated Service for the
+CONNECT port. Your existing Ingress/Service keeps serving normal HTTPS traffic.
+
+```yaml
+forwardProxy:
+  enabled: true
+  service:
+    enabled: true
+    type: LoadBalancer   # must be L4 (TCP passthrough), not an L7 ingress
+```
+
+See [`examples/forward-proxy.yaml`](examples/forward-proxy.yaml) for a complete
+example.
+
 ## TLS Configuration
 
 ### Self-Signed (Default)
@@ -407,7 +522,26 @@ Create a Certificate resource and reference the secret:
 tls:
   generateSelfSigned: false
   existingSecret: socket-firewall-tls
+  certManager: true
 ```
+
+`certManager: true` remaps `tls.crt` to `fullchain.pem` and `tls.key` to `privkey.pem`,
+which are the filenames nginx expects.
+
+By default the chart also projects `ca.crt` from the secret. ACME issuers like Let's
+Encrypt don't populate `ca.crt` (the chain is in `tls.crt`), so set `includeCaCrt: false`
+to skip it:
+
+```yaml
+tls:
+  generateSelfSigned: false
+  existingSecret: socket-firewall-tls
+  certManager: true
+  includeCaCrt: false
+```
+
+Keep `includeCaCrt: true` (the default) for CA, SelfSigned, or Vault issuers if you want
+the CA cert mounted at `/etc/nginx/ssl/ca.crt` for client trust extraction.
 
 ## Autoscaling
 
@@ -434,6 +568,35 @@ kubectl get hpa socket-firewall
 kubectl describe hpa socket-firewall
 ```
 
+## Spreading Replicas Across Zones
+
+When you run more than one replica (via `replicaCount` or autoscaling), use
+`topologySpreadConstraints` to distribute pods evenly across availability zones
+(or nodes) so a single zone/node failure can't take down a disproportionate share
+of the fleet. This is preferred over soft pod anti-affinity, which the scheduler is
+free to ignore and can pile replicas into one zone.
+
+```yaml
+replicaCount: 3
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway   # best-effort even spread; never blocks scheduling
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: socket-firewall
+```
+
+- `maxSkew: 1` keeps zones within one pod of each other.
+- `whenUnsatisfiable: ScheduleAnyway` is a soft guarantee (recommended). Use
+  `DoNotSchedule` for a hard guarantee — but be aware pods can stay `Pending` if a
+  zone is full or you have fewer zones than replicas.
+- Pin spreading to a specific revision by adding `matchLabelKeys: [pod-template-hash]`
+  (requires Kubernetes 1.27+, satisfied by all currently-supported EKS and GKE versions).
+
+**Compatibility:** `topologySpreadConstraints` is GA since Kubernetes 1.19, so it works
+on every currently-supported cluster. The chart sets no `kubeVersion` floor.
+
 ## Using an Existing Secret for API Token
 
 ```bash
@@ -450,6 +613,105 @@ helm install socket-firewall . \
 
 ```bash
 kubectl rollout restart deployment/socket-firewall
+```
+
+## Redis Cache
+
+Enable an external Redis cache for Socket API lookups when running multiple firewall replicas. Without Redis, each pod maintains its own in-memory cache.
+
+```yaml
+redis:
+  enabled: true
+  host: redis.default.svc.cluster.local
+  port: 6379
+  existingSecret: redis-credentials
+  existingSecretKey: REDIS_PASSWORD
+```
+
+### Redis TLS
+
+For Redis instances that require TLS (managed services like GCP Memorystore, AWS ElastiCache with in-transit encryption, or Azure Cache), enable `redis.ssl`.
+
+If the Redis server uses a CA that isn't in the system trust store (this is the default for **GCP Memorystore**, which uses a per-instance private CA), provide the CA via an existing Kubernetes secret. The chart mounts it as a file at a known path inside the container.
+
+```bash
+# Store the CA cert in a secret
+kubectl create secret generic redis-ca \
+  --from-file=ca.crt=/path/to/redis-ca.pem
+```
+
+```yaml
+redis:
+  enabled: true
+  host: 10.0.0.5
+  port: 6379
+  ssl: true
+  sslVerify: true
+  sslCaCertExistingSecret: redis-ca
+  sslCaCertExistingSecretKey: ca.crt   # default
+```
+
+For mutual TLS, add the client cert and key the same way:
+
+```yaml
+redis:
+  ssl: true
+  sslCaCertExistingSecret: redis-ca
+  sslClientCertExistingSecret: redis-client
+  sslClientCertExistingSecretKey: client.crt
+  sslClientKeyExistingSecret: redis-client
+  sslClientKeyExistingSecretKey: client.key
+```
+
+The `sslCaCert`, `sslClientCert`, and `sslClientKey` fields remain available as raw file paths if you are delivering the cert files via your own volume or init container.
+
+## Metrics & Monitoring
+
+The firewall exposes Prometheus metrics in text exposition format on a dedicated
+plain-HTTP listener on port `9145` at `/metrics`. The listener is always on in the
+image and the chart exposes it by default (`metrics.enabled: true`) as a `metrics`
+port on the ClusterIP Service, so it is reachable in-cluster without extra config.
+
+**Image-version gate:** the `/metrics` endpoint only exists in firewall image
+`1.1.343` or later. The chart auto-suppresses the metrics port, pod annotations,
+and ServiceMonitor when the resolved image tag is an older semver than
+`metrics.minImageVersion` (default `1.1.343`, the first image that serves
+`/metrics`), so pinning an older image won't produce a dangling scrape target.
+Tags that aren't semver (`latest`, a digest, or a custom string) can't be
+compared and are treated as new enough (fail-open), so those installs are never
+broken. Set `metrics.enabled: false` to disable metrics exposure regardless of
+the image tag.
+
+**Scrape with Prometheus Operator (ServiceMonitor):**
+
+```yaml
+metrics:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    # labels: to match your Prometheus serviceMonitorSelector
+    labels: {}
+```
+
+This requires the `monitoring.coreos.com` CRDs (Prometheus Operator) to be installed
+in the cluster.
+
+**Annotation-based discovery (alternative):** if you scrape via pod annotations
+instead of the Operator, set `metrics.podAnnotations: true` to add
+`prometheus.io/scrape`, `prometheus.io/port`, and `prometheus.io/path` to the pod.
+Use this *or* the ServiceMonitor, not both.
+
+> **Security:** the `/metrics` endpoint has no built-in authentication — access
+> control is deferred to the network layer. It is only reachable in-cluster via the
+> ClusterIP Service; restrict access further with a NetworkPolicy if required, and
+> do not expose port `9145` through an Ingress or LoadBalancer.
+
+To turn metrics off entirely (drops the container/Service port and any ServiceMonitor):
+
+```yaml
+metrics:
+  enabled: false
 ```
 
 ## Deployment Recommendations
