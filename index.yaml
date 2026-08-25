@@ -2,8 +2,32 @@ apiVersion: v1
 entries:
   socket-firewall:
   - apiVersion: v2
+    appVersion: 2.3.3
+    created: "2026-08-25T20:54:06.986042688Z"
+    description: Socket.dev Registry Firewall - Block vulnerable packages before they
+      reach your cluster
+    digest: 4d235598b5b1f82445c15002143b248742afaeac17235ed8bd9cd785bcdb261d
+    home: https://socket.dev
+    keywords:
+    - security
+    - supply-chain
+    - npm
+    - pypi
+    - maven
+    - firewall
+    maintainers:
+    - name: Socket.dev
+      url: https://socket.dev
+    name: socket-firewall
+    sources:
+    - https://github.com/SocketDev/socket-registry-firewall
+    type: application
+    urls:
+    - https://socketdev-demo.github.io/socket-firewall-helm/socket-firewall-0.11.4.tgz
+    version: 0.11.4
+  - apiVersion: v2
     appVersion: 2.2.0
-    created: "2026-08-20T11:14:08.812347801Z"
+    created: "2026-08-25T20:54:06.983949713Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 5728396b4a929259357d0a4504354ed8d91c2e7692891c24c0be3b59bf2c93b4
@@ -27,7 +51,7 @@ entries:
     version: 0.11.3
   - apiVersion: v2
     appVersion: 2.1.1
-    created: "2026-08-20T11:14:08.810216816Z"
+    created: "2026-08-25T20:54:06.981715344Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 646138243ae5d39b5c1c4cf1f3c684d9720915f39a25d8710a10d3064dbf4374
@@ -51,7 +75,7 @@ entries:
     version: 0.11.2
   - apiVersion: v2
     appVersion: 2.0.14
-    created: "2026-08-20T11:14:08.808017312Z"
+    created: "2026-08-25T20:54:06.978481633Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 80193a87b533568facd1950ef04c934ac0f4b4ce0fa87e717e88b2cd7232ae87
@@ -75,7 +99,7 @@ entries:
     version: 0.11.1
   - apiVersion: v2
     appVersion: 2.0.11
-    created: "2026-08-20T11:14:08.804860529Z"
+    created: "2026-08-25T20:54:06.976344386Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 856e9d53bac96c663e1dd1ecb61d35a8fe9728f6c8dde73d7fb16f1bd20798af
@@ -99,7 +123,7 @@ entries:
     version: 0.11.0
   - apiVersion: v2
     appVersion: 2.0.5
-    created: "2026-08-20T11:14:08.843024772Z"
+    created: "2026-08-25T20:54:07.017770618Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 8e2b0ce91769557f86f8183208a164594100a0b2c4bd967f604fb16d77a85474
@@ -123,7 +147,7 @@ entries:
     version: 0.9.0
   - apiVersion: v2
     appVersion: 2.0.3
-    created: "2026-08-20T11:14:08.841054159Z"
+    created: "2026-08-25T20:54:07.014842289Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: d2241687a42d98d0d90bfed86ee9f2f0492e958cf143b2b809d0fbe740027237
@@ -147,7 +171,7 @@ entries:
     version: 0.8.0
   - apiVersion: v2
     appVersion: 2.0.3
-    created: "2026-08-20T11:14:08.838349431Z"
+    created: "2026-08-25T20:54:07.012877454Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 8c759c16a1bcc0a228e6ae85d683b8e5332ce5352ba18fdefb77d0d9f8928fce
@@ -171,7 +195,7 @@ entries:
     version: 0.7.0
   - apiVersion: v2
     appVersion: 2.0.3
-    created: "2026-08-20T11:14:08.836451614Z"
+    created: "2026-08-25T20:54:07.010909914Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 232eae314b16849397509c63ed034587601d30301438ecd11b3a5791c7f77bf5
@@ -195,7 +219,7 @@ entries:
     version: 0.6.0
   - apiVersion: v2
     appVersion: 1.1.346
-    created: "2026-08-20T11:14:08.834637895Z"
+    created: "2026-08-25T20:54:07.009061327Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 116a4a732e09bbabe79355d93313a14be0b9ea10c1395a6d7b0ce78275aa2e57
@@ -219,7 +243,7 @@ entries:
     version: 0.5.0
   - apiVersion: v2
     appVersion: 1.1.346
-    created: "2026-08-20T11:14:08.833245829Z"
+    created: "2026-08-25T20:54:07.007537377Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 801a15eebcc42c6e1d8bd5ad87bef3707195f42dda641b13ae40aa496ef08427
@@ -243,7 +267,7 @@ entries:
     version: 0.4.3
   - apiVersion: v2
     appVersion: 1.1.335
-    created: "2026-08-20T11:14:08.831013859Z"
+    created: "2026-08-25T20:54:07.005048528Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 30b0ff00b2c82bb2b68f0c8fa34fb7de722e1740f0dcc422e511eb1485efa8ed
@@ -267,7 +291,7 @@ entries:
     version: 0.4.1
   - apiVersion: v2
     appVersion: 1.1.328
-    created: "2026-08-20T11:14:08.829624908Z"
+    created: "2026-08-25T20:54:07.003705716Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 49f91600b0a9df2f4a7fb916455471cdd7f365db627188ab51e614bdac42e206
@@ -291,7 +315,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: 1.1.328
-    created: "2026-08-20T11:14:08.828228304Z"
+    created: "2026-08-25T20:54:07.002356242Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: d527b9dd1a85049757461488def0eea0d738ea57626651932d220b295bb3d8e1
@@ -315,7 +339,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.826766707Z"
+    created: "2026-08-25T20:54:07.00098644Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 3584c9fcc60a93f4af363d862c9939d14af75c960ee8d950ad9df8c7d8127435
@@ -339,7 +363,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.825385892Z"
+    created: "2026-08-25T20:54:06.99960685Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 27309ed2f35f36229591d39cc1dbf65a24c6d5ba5a37b3b82480a54bd70ffbc4
@@ -363,7 +387,7 @@ entries:
     version: 0.2.4
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.82306746Z"
+    created: "2026-08-25T20:54:06.997097253Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: b602e2b8e609b0b4bdb5cfb64498b7b8812bc2f71eb4d4eec578ae335f60dc98
@@ -387,7 +411,7 @@ entries:
     version: 0.2.3
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.821309366Z"
+    created: "2026-08-25T20:54:06.995269785Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: e6b410c3902b3033d844063c8b9e384c77f646260d9248448ca66f4d5c329974
@@ -411,7 +435,7 @@ entries:
     version: 0.2.2
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.819533238Z"
+    created: "2026-08-25T20:54:06.993463908Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: a409259a82a5bacac5d8d7dd1018fbdea89a8976dd7385b6f6c08a149aa204d9
@@ -435,7 +459,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: 1.1.159
-    created: "2026-08-20T11:14:08.81769908Z"
+    created: "2026-08-25T20:54:06.991548575Z"
     description: Socket.dev Registry Firewall - Block vulnerable packages before they
       reach your cluster
     digest: 65a5cbc64feadd3733e77637467b927aa993006226fd9c8e6a1b8b5156b2a724
@@ -457,4 +481,4 @@ entries:
     urls:
     - https://socketdev-demo.github.io/socket-firewall-helm/socket-firewall-0.2.0.tgz
     version: 0.2.0
-generated: "2026-08-20T11:14:08.802558072Z"
+generated: "2026-08-25T20:54:06.973990413Z"
